@@ -1,0 +1,27 @@
+{
+  "settings": {
+    "ahaUrl": "https://cyberark.aha.io/products/COMPANY/feature_cards",
+    "ahaProduct": "",
+    "jiraUrl": "",
+    "jiraProject": "",
+    "products": [
+      {
+        "name": "Product A",
+        "emoji": "📱",
+        "ahaUrl": "",
+        "jiraUrl": "",
+        "status": "active",
+        "owner": ""
+      },
+      {
+        "name": "Product B",
+        "emoji": "🖥️",
+        "ahaUrl": "",
+        "jiraUrl": "",
+        "status": "active",
+        "owner": ""
+      }
+    ]
+  },
+  "customLinks": {}
+}
