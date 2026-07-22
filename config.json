@@ -23,5 +23,14 @@
       }
     ]
   },
-  "customLinks": {}
+  "customLinks": {
+    "dash-aha-links": [
+      {
+        "emoji": "🔗",
+        "label": "Why doesnt my link to jira works",
+        "desc": "A report that will help you identify why your features were not sent to jira. Identifies mandatory fields that are missing in the feature, MF or initiative",
+        "url": "https://cyberark.aha.io/bookmarks/custom_pivots/7656374242145213682/7665227704128405024"
+      }
+    ]
+  }
 }
