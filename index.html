@@ -1934,17 +1934,22 @@ function exitAdmin() {
 
   // Try loading config.json from same origin (Amplify deployment).
   // Falls back to localStorage silently when running locally without the file.
+  let loadedFromRemote = false;
   try {
     const res = await fetch('./config.json', { cache: 'no-store' });
     if (res.ok) {
       const cfg = await res.json();
       if (cfg.settings)    Object.assign(S, cfg.settings);
-      if (cfg.customLinks) customLinks = cfg.customLinks;
+      if (cfg.customLinks) { customLinks = cfg.customLinks; loadedFromRemote = true; }
     }
   } catch(e) { /* no config.json — use localStorage */ }
 
   loadSettings();
-  loadCustomLinks();
+  if (loadedFromRemote) {
+    Object.keys(customLinks).forEach(gridId => renderCustomLinks(gridId));
+  } else {
+    loadCustomLinks();
+  }
   calcRice();
   calcSprint();
   initDoD();
