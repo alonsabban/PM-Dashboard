@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Portal</title>
+<style>
+/* ── Reset & Variables ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --aha:       #7C3AED;
+  --aha-light: #EDE9FE;
+  --jira:      #0052CC;
+  --jira-light:#DBEAFE;
+  --ai:        #0891B2;
+  --ai-light:  #CFFAFE;
+  --green:     #059669;
+  --green-light:#D1FAE5;
+  --amber:     #D97706;
+  --amber-light:#FEF3C7;
+  --red:       #DC2626;
+  --red-light: #FEE2E2;
+
+  --bg:        #F1F5F9;
+  --surface:   #FFFFFF;
+  --surface2:  #F8FAFC;
+  --border:    #E2E8F0;
+  --text:      #0F172A;
+  --text-muted:#64748B;
+  --sidebar-w: 220px;
+  --radius:    12px;
+  --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+}
+
+[data-theme="dark"] {
+  --bg:        #0F172A;
+  --surface:   #1E293B;
+  --surface2:  #162032;
+  --border:    #334155;
+  --text:      #F1F5F9;
+  --text-muted:#94A3B8;
+  --shadow:    0 1px 3px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5);
+  --aha-light: #3B1F6E;
+  --jira-light:#1E3A5F;
+  --ai-light:  #164E63;
+  --green-light:#064E3B;
+  --amber-light:#451A03;
+  --red-light: #450A0A;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background .2s, color .2s;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 100;
+  transition: background .2s, border-color .2s;
+}
+
+.sidebar-logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-logo .logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--aha), var(--ai));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 700; flex-shrink: 0;
+}
+.sidebar-logo span { font-weight: 700; font-size: 15px; }
+.sidebar-logo small { display: block; font-size: 11px; color: var(--text-muted); }
+
+nav { flex: 1; padding: 12px 8px; }
+
+.nav-section { margin-bottom: 4px; }
+.nav-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 8px 10px 4px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 8px;
+  cursor: pointer; transition: background .15s, color .15s;
+  color: var(--text-muted); font-weight: 500; user-select: none;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { background: var(--aha-light); color: var(--aha); }
+.nav-item .nav-icon { width: 18px; flex-shrink: 0; text-align: center; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  background: var(--ai); color: #fff;
+  padding: 1px 6px; border-radius: 10px;
+}
+
+.sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Main ────────────────────────────────────────────────────────── */
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 56px;
+  display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+  transition: background .2s;
+}
+.topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
+.topbar-title span { color: var(--text-muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 8px; border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .15s; text-decoration: none;
+}
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-primary { background: var(--aha); color: #fff; }
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+.btn-jira { background: var(--jira); color: #fff; }
+.btn-jira:hover { opacity: .9; }
+.btn-outline {
+  background: transparent; border: 1.5px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--aha); color: var(--aha); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+.content {
+  padding: 28px;
+  flex: 1;
+}
+
+/* ── Sections ────────────────────────────────────────────────────── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: background .2s, border-color .2s;
+}
+.card-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-header h3 { font-size: 15px; font-weight: 700; flex: 1; }
+.card-body { padding: 20px; }
+
+.card-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.icon-aha   { background: var(--aha-light);   color: var(--aha);   }
+.icon-jira  { background: var(--jira-light);  color: var(--jira);  }
+.icon-ai    { background: var(--ai-light);    color: var(--ai);    }
+.icon-green { background: var(--green-light); color: var(--green); }
+.icon-amber { background: var(--amber-light); color: var(--amber); }
+
+/* ── Grid helpers ────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 900px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+/* ── Page header ─────────────────────────────────────────────────── */
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 22px; font-weight: 800; }
+.page-header p  { color: var(--text-muted); margin-top: 4px; }
+
+/* ── Quick link cards ────────────────────────────────────────────── */
+.quick-link {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer; transition: all .15s;
+  text-decoration: none; color: inherit;
+}
+.quick-link:hover { border-color: var(--aha); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.quick-link .ql-icon { font-size: 24px; }
+.quick-link .ql-label { font-weight: 700; font-size: 13px; }
+.quick-link .ql-desc { font-size: 12px; color: var(--text-muted); }
+
+/* ── Tag / Badge ─────────────────────────────────────────────────── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.tag-aha   { background: var(--aha-light);   color: var(--aha);   }
+.tag-jira  { background: var(--jira-light);  color: var(--jira);  }
+.tag-ai    { background: var(--ai-light);    color: var(--ai);    }
+.tag-green { background: var(--green-light); color: var(--green); }
+.tag-amber { background: var(--amber-light); color: var(--amber); }
+.tag-red   { background: var(--red-light);   color: var(--red);   }
+
+/* ── Forms ───────────────────────────────────────────────────────── */
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-muted); }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 9px 12px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 13px;
+  outline: none; transition: border-color .15s;
+  font-family: inherit;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+  border-color: var(--aha);
+}
+.form-row textarea { resize: vertical; min-height: 80px; }
+
+/* ── Table ───────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+th { font-weight: 700; color: var(--text-muted); background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+tr:hover td { background: var(--surface2); }
+
+/* ── RICE Calculator ─────────────────────────────────────────────── */
+.rice-result {
+  text-align: center; padding: 24px 16px;
+  background: linear-gradient(135deg, var(--aha-light), var(--ai-light));
+  border-radius: 10px; margin-top: 16px;
+}
+.rice-score { font-size: 48px; font-weight: 900; color: var(--aha); line-height: 1; }
+.rice-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Sprint Capacity ─────────────────────────────────────────────── */
+.capacity-output {
+  background: var(--green-light); border-radius: 10px;
+  padding: 20px; text-align: center; margin-top: 16px;
+}
+.capacity-number { font-size: 40px; font-weight: 900; color: var(--green); }
+
+/* ── Checklist ───────────────────────────────────────────────────── */
+.checklist { list-style: none; }
+.checklist li {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li input[type="checkbox"] {
+  width: 16px; height: 16px; margin-top: 1px; cursor: pointer;
+  accent-color: var(--aha); flex-shrink: 0;
+}
+.checklist li label { cursor: pointer; flex: 1; }
+.checklist li.done label { text-decoration: line-through; color: var(--text-muted); }
+
+/* ── Coming Soon overlay ─────────────────────────────────────────── */
+.coming-soon-wrap { position: relative; }
+.coming-soon-overlay {
+  position: absolute; inset: 0;
+  background: rgba(15,23,42,.55);
+  backdrop-filter: blur(2px);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px; z-index: 10;
+}
+.coming-soon-overlay .cs-badge {
+  background: var(--ai); color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+}
+.coming-soon-overlay p { color: #fff; font-size: 13px; opacity: .85; max-width: 240px; text-align: center; }
+
+/* ── Stat tile ───────────────────────────────────────────────────── */
+.stat-tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-tile .st-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.stat-tile .st-val   { font-size: 28px; font-weight: 900; }
+.stat-tile .st-sub   { font-size: 12px; color: var(--text-muted); }
+
+/* ── Misc ────────────────────────────────────────────────────────── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.flex-end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.gap-12 { gap: 12px; }
+.text-muted { color: var(--text-muted); }
+.text-sm { font-size: 12px; }
+.font-bold { font-weight: 700; }
+
+.alert {
+  padding: 12px 16px; border-radius: 9px; font-size: 13px;
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;
+}
+.alert-info { background: var(--ai-light); color: var(--ai); }
+.alert-amber { background: var(--amber-light); color: var(--amber); }
+
+.progress-bar-wrap { background: var(--border); border-radius: 999px; height: 8px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--aha), var(--ai)); transition: width .5s; }
+
+/* ── URL display ─────────────────────────────────────────────────── */
+.url-box {
+  background: var(--surface2); border: 1.5px dashed var(--border);
+  border-radius: 8px; padding: 12px 14px;
+  font-family: monospace; font-size: 12px; word-break: break-all;
+  color: var(--text-muted); margin-top: 10px; min-height: 40px;
+}
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--text); color: var(--bg);
+  padding: 10px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  opacity: 0; transform: translateY(10px);
+  transition: all .25s; z-index: 1000; pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Pill tab ────────────────────────────────────────────────────── */
+.pill-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface2); padding: 4px; border-radius: 10px; width: fit-content; }
+.pill-tab { padding: 6px 16px; border-radius: 7px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; transition: all .15s; }
+.pill-tab.active { background: var(--surface); color: var(--aha); box-shadow: var(--shadow); }
+
+/* ── Admin mode ───────────────────────────────────────────────────── */
+.admin-bar {
+  background: var(--amber-light); border-bottom: 2px solid var(--amber);
+  padding: 6px 28px; display: none; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 700; color: var(--amber);
+}
+.admin-bar.visible { display: flex; }
+.add-link-card {
+  background: transparent; border: 2px dashed var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: none; flex-direction: column; gap: 6px; align-items: center;
+  justify-content: center; cursor: pointer; transition: all .15s;
+  color: var(--text-muted); font-size: 13px; font-weight: 600;
+  min-height: 90px; text-align: center;
+}
+.add-link-card:hover { border-color: var(--aha); color: var(--aha); background: var(--aha-light); }
+body.admin-mode .add-link-card { display: flex; }
+.quick-link { position: relative; }
+.ql-admin-delete {
+  position: absolute; top: 6px; right: 6px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--red); color: #fff; border: none; cursor: pointer;
+  font-size: 11px; display: none; align-items: center; justify-content: center;
+  z-index: 2; line-height: 1;
+}
+body.admin-mode .quick-link.custom:hover .ql-admin-delete { display: flex; }
+/* admin-only elements hidden in view mode */
+[data-admin-only] { display: none !important; }
+body.admin-mode [data-admin-only] { display: flex !important; }
+body.admin-mode nav [data-admin-only] { display: block !important; }
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15,23,42,.6);
+  backdrop-filter: blur(3px); z-index: 600;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; box-shadow: var(--shadow-md);
+  padding: 28px; width: 420px; max-width: 95vw;
+  transform: translateY(16px); transition: transform .2s;
+}
+.modal-backdrop.open .modal { transform: translateY(0); }
+.modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+.nav-item.admin-active { background: var(--amber-light) !important; color: var(--amber) !important; }
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">P</div>
+    <div>
+      <span>PM Portal</span>
+      <small>Product HQ</small>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Workspace</div>
+      <button class="nav-item active" onclick="showSection('dashboard', this)">
+        <span class="nav-icon">🏠</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="showSection('aha', this)">
+        <span class="nav-icon">🚀</span> Aha! Workspace
+      </button>
+      <button class="nav-item" onclick="showSection('jira', this)">
+        <span class="nav-icon">🔗</span> Jira ↔ Aha
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Tools</div>
+      <button class="nav-item" onclick="showSection('pmtools', this)">
+        <span class="nav-icon">🛠️</span> PM Tools
+      </button>
+      <button class="nav-item" onclick="showSection('products', this)">
+        <span class="nav-icon">📦</span> Products
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Upcoming</div>
+      <button class="nav-item" onclick="showSection('ai', this)">
+        <span class="nav-icon">✨</span> AI Assist
+        <span class="nav-badge">Soon</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="nav-item" onclick="toggleTheme()">
+      <span class="nav-icon" id="theme-icon">🌙</span>
+      <span id="theme-label">Dark mode</span>
+    </button>
+    <button class="nav-item" data-admin-only onclick="showSection('settings', this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+    <button class="nav-item" id="admin-toggle-btn" onclick="toggleAdmin()">
+      <span class="nav-icon">🔐</span>
+      <span id="admin-label">Admin</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────────── -->
+<div id="main">
+  <!-- Admin banner -->
+  <div class="admin-bar" id="admin-bar">
+    <span>🔐</span>
+    <span>Admin mode — you can add and remove links</span>
+    <button class="btn btn-sm" id="publish-btn"
+      style="margin-left:auto;background:var(--amber);color:#fff;gap:6px"
+      onclick="publishToGitHub()">
+      <span id="publish-icon">☁️</span> Save &amp; Publish
+    </button>
+    <button class="btn btn-outline btn-sm" style="border-color:var(--amber);color:var(--amber)" onclick="exitAdmin()">Exit admin</button>
+  </div>
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard <span id="topbar-sub">Welcome back</span></div>
+    <a id="topbar-aha-btn" class="btn btn-primary btn-sm" href="#" target="_blank" onclick="openAha(event)">
+      ↗ Open Aha!
+    </a>
+    <a id="topbar-jira-btn" class="btn btn-jira btn-sm" href="#" target="_blank" onclick="openJira(event)">
+      ↗ Open Jira
+    </a>
+  </header>
+
+  <main class="content">
+
+    <!-- ═══════════════════════════ DASHBOARD ═════════════════════ -->
+    <div class="section active" id="section-dashboard">
+      <div class="page-header">
+        <h2>Good morning 👋</h2>
+        <p>Your PM workspace — Aha, Jira, tools, and AI in one place.</p>
+      </div>
+
+      <div class="grid-4 mb-16">
+        <div class="stat-tile">
+          <div class="st-label">Aha Workspace</div>
+          <div class="st-val" style="color:var(--aha)">●</div>
+          <div class="st-sub">Configured in Settings</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Jira Board</div>
+          <div class="st-val" style="color:var(--jira)">●</div>
+          <div class="st-sub">Configured in Settings</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">PM Tools</div>
+          <div class="st-val" style="color:var(--green)">5</div>
+          <div class="st-sub">RICE, Sprint, Checklists…</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">AI Assist</div>
+          <div class="st-val" style="color:var(--ai)">🔜</div>
+          <div class="st-sub">Coming with Aha API</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon icon-aha">🚀</div>
+            <h3>Quick Access — Aha!</h3>
+          </div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:10px" id="dash-aha-links">
+              <a class="quick-link" href="#" onclick="openAhaPath(event,'')">
+                <span class="ql-icon">🗺️</span>
+                <span class="ql-label">Roadmap</span>
+                <span class="ql-desc">Visualize your strategy</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openAhaPath(event,'features')">
+                <span class="ql-icon">✨</span>
+                <span class="ql-label">Features</span>
+                <span class="ql-desc">Backlog &amp; prioritization</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openAhaPath(event,'releases')">
+                <span class="ql-icon">📦</span>
+                <span class="ql-label">Releases</span>
+                <span class="ql-desc">Plan &amp; track releases</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openAhaPath(event,'ideas')">
+                <span class="ql-icon">💡</span>
+                <span class="ql-label">Ideas</span>
+                <span class="ql-desc">Idea portal &amp; votes</span>
+              </a>
+              <!-- custom links injected here -->
+              <div class="add-link-card" onclick="openAddLinkModal('dash-aha-links')">
+                <span style="font-size:22px">＋</span>
+                <span>Add link</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon icon-jira">🔗</div>
+            <h3>Quick Access — Jira</h3>
+          </div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:10px" id="dash-jira-links">
+              <a class="quick-link" href="#" onclick="openJiraPath(event,'')">
+                <span class="ql-icon">📋</span>
+                <span class="ql-label">Board</span>
+                <span class="ql-desc">Sprint board view</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openJiraPath(event,'backlog')">
+                <span class="ql-icon">📚</span>
+                <span class="ql-label">Backlog</span>
+                <span class="ql-desc">Issue backlog</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openJiraPath(event,'reports')">
+                <span class="ql-icon">📊</span>
+                <span class="ql-label">Reports</span>
+                <span class="ql-desc">Velocity &amp; burndown</span>
+              </a>
+              <a class="quick-link" href="#" onclick="openJiraPath(event,'releases')">
+                <span class="ql-icon">🏷️</span>
+                <span class="ql-label">Versions</span>
+                <span class="ql-desc">Release versions</span>
+              </a>
+              <!-- custom links injected here -->
+              <div class="add-link-card" onclick="openAddLinkModal('dash-jira-links')">
+                <span style="font-size:22px">＋</span>
+                <span>Add link</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-24 card">
+        <div class="card-header">
+          <div class="card-icon icon-ai">✨</div>
+          <h3>AI Assist — What's coming</h3>
+          <span class="tag tag-ai">In development</span>
+        </div>
+        <div class="card-body">
+          <div class="grid-3" style="gap:12px">
+            <div style="padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+              <div style="font-size:22px;margin-bottom:8px">🤖</div>
+              <div class="font-bold mb-4">Cursor + Aha API</div>
+              <div class="text-sm text-muted">Describe a feature in plain language — Cursor will draft it and push it directly into Aha via API.</div>
+            </div>
+            <div style="padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+              <div style="font-size:22px;margin-bottom:8px">🔌</div>
+              <div class="font-bold mb-4">Claude MCP → Jira</div>
+              <div class="text-sm text-muted">Claude will create Jira tickets with structured fields from a natural language prompt using MCP integration.</div>
+            </div>
+            <div style="padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+              <div style="font-size:22px;margin-bottom:8px">🔄</div>
+              <div class="font-bold mb-4">Dual-create mode</div>
+              <div class="text-sm text-muted">One prompt → Aha feature + linked Jira story, keeping both systems in sync from day one.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ AHA WORKSPACE ═════════════════ -->
+    <div class="section" id="section-aha">
+      <div class="page-header">
+        <h2>🚀 Aha! Workspace</h2>
+        <p>Navigate Aha, build feature URLs, and manage your roadmap.</p>
+      </div>
+
+      <div class="pill-tabs" id="aha-tabs">
+        <button class="pill-tab active" onclick="showPillTab('aha','links',this)">Quick Links</button>
+        <button class="pill-tab" onclick="showPillTab('aha','builder',this)">Feature Builder</button>
+        <button class="pill-tab" onclick="showPillTab('aha','guide',this)">Aha Tips</button>
+      </div>
+
+      <!-- Aha Links tab -->
+      <div id="aha-links">
+        <div class="alert alert-info">
+          💡 Set your Aha workspace URL in <strong>Settings</strong> to make all links clickable.
+        </div>
+        <div class="grid-4" id="aha-quick-links">
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'')">
+            <span class="ql-icon">🏠</span><span class="ql-label">Home</span><span class="ql-desc">Workspace home</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'strategy/vision')">
+            <span class="ql-icon">🎯</span><span class="ql-label">Vision</span><span class="ql-desc">Product vision &amp; goals</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'roadmap')">
+            <span class="ql-icon">🗺️</span><span class="ql-label">Roadmap</span><span class="ql-desc">Timeline roadmap view</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'features/board')">
+            <span class="ql-icon">📋</span><span class="ql-label">Feature Board</span><span class="ql-desc">Kanban view</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'features/list')">
+            <span class="ql-icon">📝</span><span class="ql-label">Feature List</span><span class="ql-desc">All features list</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'releases')">
+            <span class="ql-icon">📦</span><span class="ql-label">Releases</span><span class="ql-desc">Plan releases</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'ideas/portal')">
+            <span class="ql-icon">💡</span><span class="ql-label">Idea Portal</span><span class="ql-desc">Customer ideas</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'reports')">
+            <span class="ql-icon">📊</span><span class="ql-label">Reports</span><span class="ql-desc">Aha reports</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'integrations')">
+            <span class="ql-icon">🔌</span><span class="ql-label">Integrations</span><span class="ql-desc">API &amp; connections</span>
+          </a>
+          <a class="quick-link" href="#" onclick="openAhaPath(event,'settings')">
+            <span class="ql-icon">⚙️</span><span class="ql-label">Settings</span><span class="ql-desc">Workspace config</span>
+          </a>
+          <!-- custom links injected here -->
+          <div class="add-link-card" onclick="openAddLinkModal('aha-quick-links')">
+            <span style="font-size:22px">＋</span>
+            <span>Add link</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature builder tab -->
+      <div id="aha-builder" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon icon-aha">✨</div>
+              <h3>Feature URL Builder</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-sm text-muted mb-16">Fill in the details to construct a direct link to create a new feature in Aha. Useful for Cursor prompts that need to open Aha pre-filled.</p>
+              <div class="form-row">
+                <label>Feature Name</label>
+                <input id="fb-name" type="text" placeholder="e.g. User authentication via SSO" oninput="buildFeatureUrl()">
+              </div>
+              <div class="form-row">
+                <label>Description (optional)</label>
+                <textarea id="fb-desc" placeholder="What should this feature do?" oninput="buildFeatureUrl()"></textarea>
+              </div>
+              <div class="form-row">
+                <label>Release (optional)</label>
+                <input id="fb-release" type="text" placeholder="e.g. Q3 2026" oninput="buildFeatureUrl()">
+              </div>
+              <div class="form-row">
+                <label>Priority</label>
+                <select id="fb-priority" onchange="buildFeatureUrl()">
+                  <option value="">— select —</option>
+                  <option>P1 - Critical</option>
+                  <option>P2 - High</option>
+                  <option>P3 - Medium</option>
+                  <option>P4 - Low</option>
+                </select>
+              </div>
+              <div class="url-box" id="feature-url-box">Fill in the fields above to build your link…</div>
+              <div class="flex-end">
+                <button class="btn btn-outline btn-sm" onclick="copyFeatureUrl()">📋 Copy link</button>
+                <button class="btn btn-primary btn-sm" onclick="openFeatureUrl()">↗ Open in Aha</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon icon-ai">🤖</div>
+              <h3>Cursor Prompt Template</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-sm text-muted mb-16">Use this as a starting point for Cursor when you want it to create features via the Aha API.</p>
+              <div class="url-box" id="cursor-prompt-box" style="min-height:180px;line-height:1.7">
+                Fill in the Feature Builder on the left to generate a Cursor prompt…
+              </div>
+              <div class="flex-end">
+                <button class="btn btn-outline btn-sm" onclick="copyCursorPrompt()">📋 Copy prompt</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aha tips tab -->
+      <div id="aha-guide" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-aha">📖</div><h3>Aha Hierarchy</h3></div>
+            <div class="card-body">
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Level</th><th>Record type</th><th>Purpose</th></tr>
+                  <tr><td><span class="tag tag-aha">1</span></td><td><strong>Goal / Initiative</strong></td><td>Strategic business objective</td></tr>
+                  <tr><td><span class="tag tag-aha">2</span></td><td><strong>Epic</strong></td><td>Large body of work (weeks/months)</td></tr>
+                  <tr><td><span class="tag tag-aha">3</span></td><td><strong>Feature</strong></td><td>Deliverable capability (days/week)</td></tr>
+                  <tr><td><span class="tag tag-aha">4</span></td><td><strong>Requirement</strong></td><td>Acceptance criteria for a feature</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-amber">💡</div><h3>Key Shortcuts &amp; Tips</h3></div>
+            <div class="card-body">
+              <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+                <li class="text-sm">⌨️ <strong>Ctrl+K / ⌘K</strong> — Global search in Aha</li>
+                <li class="text-sm">🏷️ Use <strong>tags</strong> to cross-link features across products</li>
+                <li class="text-sm">📌 <strong>Pin</strong> views to your sidebar for quick access</li>
+                <li class="text-sm">🔗 <strong>External links</strong> field holds the Jira issue URL after sync</li>
+                <li class="text-sm">📊 <strong>Scoring</strong> — configure RICE in workspace settings</li>
+                <li class="text-sm">🔔 <strong>Watchers</strong> on features get notified on status change</li>
+                <li class="text-sm">📤 <strong>Export</strong> via Reports → CSV for stakeholder reviews</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ JIRA ↔ AHA ════════════════════ -->
+    <div class="section" id="section-jira">
+      <div class="page-header">
+        <h2>🔗 Jira ↔ Aha Integration</h2>
+        <p>Field mappings, sync rules, and troubleshooting guidance.</p>
+      </div>
+
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="showPillTab('jira','mapping',this)">Field Mapping</button>
+        <button class="pill-tab" onclick="showPillTab('jira','sync',this)">Sync Rules</button>
+        <button class="pill-tab" onclick="showPillTab('jira','issues',this)">Troubleshooting</button>
+      </div>
+
+      <div id="jira-mapping">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon icon-jira">🗺️</div>
+            <h3>Standard Field Mapping</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Aha! field</th><th>Jira field</th><th>Direction</th><th>Notes</th></tr></thead>
+                <tbody>
+                  <tr><td>Feature name</td><td>Summary</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>Auto-synced</td></tr>
+                  <tr><td>Description</td><td>Description</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>HTML converted to Jira wiki</td></tr>
+                  <tr><td>Status</td><td>Status</td><td><span class="tag tag-green">Bidirectional</span></td><td>Requires workflow mapping</td></tr>
+                  <tr><td>Assignee</td><td>Assignee</td><td><span class="tag tag-green">Bidirectional</span></td><td>User accounts must match</td></tr>
+                  <tr><td>Release</td><td>Fix Version</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>Versions must exist in Jira</td></tr>
+                  <tr><td>Epic link</td><td>Epic Link / Parent</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>Epic must be sent first</td></tr>
+                  <tr><td>Score (RICE)</td><td>Story Points</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>Configurable field mapping</td></tr>
+                  <tr><td>Tags</td><td>Labels</td><td><span class="tag tag-aha">Aha → Jira</span></td><td>Comma-separated</td></tr>
+                  <tr><td>Jira issue key</td><td>Issue Key</td><td><span class="tag tag-jira">Jira → Aha</span></td><td>Stored in external link</td></tr>
+                  <tr><td>Comments</td><td>Comments</td><td><span class="tag tag-green">Bidirectional</span></td><td>Prefixed with [Aha] or [Jira]</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="jira-sync" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-jira">⚙️</div><h3>Sync Trigger Rules</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="padding:12px;border-radius:9px;background:var(--surface2);border:1px solid var(--border)">
+                  <div class="font-bold mb-4 text-sm">Aha → Jira triggers</div>
+                  <ul style="list-style:disc;padding-left:18px;display:flex;flex-direction:column;gap:5px" class="text-sm text-muted">
+                    <li>Feature promoted to "Ready for Dev" status</li>
+                    <li>Feature manually sent via integration button</li>
+                    <li>Release date set on a feature</li>
+                    <li>Feature assigned to a release in current sprint</li>
+                  </ul>
+                </div>
+                <div style="padding:12px;border-radius:9px;background:var(--surface2);border:1px solid var(--border)">
+                  <div class="font-bold mb-4 text-sm">Jira → Aha triggers</div>
+                  <ul style="list-style:disc;padding-left:18px;display:flex;flex-direction:column;gap:5px" class="text-sm text-muted">
+                    <li>Status change on a linked Jira issue</li>
+                    <li>Story points updated in Jira</li>
+                    <li>Comment added to linked issue</li>
+                    <li>Issue resolved / closed</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-green">🔄</div><h3>Status Workflow Mapping</h3></div>
+            <div class="card-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Aha! status</th><th>Jira status</th></tr></thead>
+                  <tbody>
+                    <tr><td>Under consideration</td><td>Backlog</td></tr>
+                    <tr><td>Planned</td><td>To Do</td></tr>
+                    <tr><td>In development</td><td>In Progress</td></tr>
+                    <tr><td>In review</td><td>In Review</td></tr>
+                    <tr><td>Shipped</td><td>Done</td></tr>
+                    <tr><td>Won't implement</td><td>Won't Fix</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-sm text-muted mt-16">⚠️ Custom statuses must be manually mapped in Aha integration settings.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="jira-issues" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-icon icon-amber">🔧</div><h3>Common Sync Issues &amp; Fixes</h3></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <details style="border:1px solid var(--border);border-radius:9px;padding:14px">
+                <summary style="font-weight:700;cursor:pointer;font-size:13px">Feature not appearing in Jira after push</summary>
+                <div class="text-sm text-muted" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+                  <p>1. Check Aha integration logs: <em>Settings → Integrations → Jira → Log</em></p>
+                  <p>2. Verify the target Jira project key matches in integration config</p>
+                  <p>3. Ensure the Aha user has <strong>create issue</strong> permissions in Jira</p>
+                  <p>4. Confirm the Jira issue type (Story/Feature) exists in the project</p>
+                </div>
+              </details>
+              <details style="border:1px solid var(--border);border-radius:9px;padding:14px">
+                <summary style="font-weight:700;cursor:pointer;font-size:13px">Status not syncing back from Jira</summary>
+                <div class="text-sm text-muted" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+                  <p>1. Check the Jira webhook is still registered: <em>Jira → Settings → System → Webhooks</em></p>
+                  <p>2. Verify Aha webhook URL is accessible from Jira (firewall / IP allowlist)</p>
+                  <p>3. Confirm status workflow mapping is complete — unmapped statuses are silently ignored</p>
+                </div>
+              </details>
+              <details style="border:1px solid var(--border);border-radius:9px;padding:14px">
+                <summary style="font-weight:700;cursor:pointer;font-size:13px">Duplicate Jira issues created</summary>
+                <div class="text-sm text-muted" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+                  <p>1. This typically happens when the Jira issue key is missing from the Aha feature's external link field</p>
+                  <p>2. Manually link the Aha feature to the existing Jira issue via the <em>Integrations</em> tab on the feature record</p>
+                  <p>3. Enable <strong>duplicate detection</strong> in Aha integration settings if available</p>
+                </div>
+              </details>
+              <details style="border:1px solid var(--border);border-radius:9px;padding:14px">
+                <summary style="font-weight:700;cursor:pointer;font-size:13px">Rich text / attachments not syncing</summary>
+                <div class="text-sm text-muted" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+                  <p>1. Aha converts HTML to Jira wiki markup — complex tables may not render perfectly</p>
+                  <p>2. Attachments require the Aha integration to have <strong>attachment sync</strong> enabled</p>
+                  <p>3. Images embedded in descriptions are converted to external links</p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ PM TOOLS ══════════════════════ -->
+    <div class="section" id="section-pmtools">
+      <div class="page-header">
+        <h2>🛠️ PM Tools</h2>
+        <p>Prioritization, capacity planning, and release checklists — all offline.</p>
+      </div>
+
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="showPillTab('tools','rice',this)">RICE Score</button>
+        <button class="pill-tab" onclick="showPillTab('tools','sprint',this)">Sprint Capacity</button>
+        <button class="pill-tab" onclick="showPillTab('tools','checklist',this)">Release Checklist</button>
+        <button class="pill-tab" onclick="showPillTab('tools','dod',this)">Definition of Done</button>
+      </div>
+
+      <!-- RICE -->
+      <div id="tools-rice">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-aha">🎯</div><h3>RICE Prioritization Calculator</h3></div>
+            <div class="card-body">
+              <p class="text-sm text-muted mb-16">RICE = (Reach × Impact × Confidence) ÷ Effort</p>
+              <div class="form-row">
+                <label>Reach — how many users/month? <span id="r-val" style="color:var(--aha)">500</span></label>
+                <input type="range" id="r" min="0" max="10000" step="100" value="500" oninput="document.getElementById('r-val').textContent=this.value;calcRice()">
+              </div>
+              <div class="form-row">
+                <label>Impact — on each user? <span id="i-val" style="color:var(--aha)">2</span>×</label>
+                <select id="i" onchange="calcRice()">
+                  <option value="0.25">0.25 — Minimal</option>
+                  <option value="0.5">0.5 — Low</option>
+                  <option value="1">1 — Medium</option>
+                  <option value="2" selected>2 — High</option>
+                  <option value="3">3 — Massive</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Confidence — how sure? <span id="c-val" style="color:var(--aha)">80</span>%</label>
+                <input type="range" id="c" min="0" max="100" step="10" value="80" oninput="document.getElementById('c-val').textContent=this.value;calcRice()">
+              </div>
+              <div class="form-row">
+                <label>Effort — person-months <span id="e-val" style="color:var(--aha)">2</span></label>
+                <input type="range" id="e" min="0.5" max="12" step="0.5" value="2" oninput="document.getElementById('e-val').textContent=this.value;calcRice()">
+              </div>
+              <div class="rice-result">
+                <div class="rice-score" id="rice-score">400</div>
+                <div class="rice-label">RICE Score</div>
+                <div id="rice-tier" class="tag tag-green" style="margin-top:8px">High Priority</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-amber">📊</div><h3>RICE Reference Guide</h3></div>
+            <div class="card-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>RICE Range</th><th>Priority</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td>&gt; 500</td><td><span class="tag tag-green">Must do</span></td><td>Schedule immediately</td></tr>
+                    <tr><td>200 – 500</td><td><span class="tag tag-aha">High</span></td><td>Next 1-2 sprints</td></tr>
+                    <tr><td>50 – 200</td><td><span class="tag tag-amber">Medium</span></td><td>Backlog refinement</td></tr>
+                    <tr><td>&lt; 50</td><td><span class="tag tag-red">Low</span></td><td>Revisit quarterly</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <hr class="divider">
+              <div style="display:flex;flex-direction:column;gap:8px" class="text-sm">
+                <p><strong>Reach:</strong> Users affected per period (month recommended)</p>
+                <p><strong>Impact:</strong> Use 3×/2×/1×/0.5×/0.25× scale only (keeps scores comparable)</p>
+                <p><strong>Confidence:</strong> 100% = hard data · 80% = some data · 50% = gut feel</p>
+                <p><strong>Effort:</strong> Total work in person-months across the whole team</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sprint capacity -->
+      <div id="tools-sprint" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-green">📅</div><h3>Sprint Capacity Planner</h3></div>
+            <div class="card-body">
+              <div class="form-row">
+                <label>Team members</label>
+                <input type="number" id="sc-members" value="5" min="1" max="20" oninput="calcSprint()">
+              </div>
+              <div class="form-row">
+                <label>Sprint length (days)</label>
+                <input type="number" id="sc-days" value="10" min="1" max="30" oninput="calcSprint()">
+              </div>
+              <div class="form-row">
+                <label>Focus factor % (meetings, overhead) <span id="ff-val" style="color:var(--green)">70</span>%</label>
+                <input type="range" id="sc-focus" min="30" max="100" value="70" oninput="document.getElementById('ff-val').textContent=this.value;calcSprint()">
+              </div>
+              <div class="form-row">
+                <label>Hours per day</label>
+                <input type="number" id="sc-hours" value="8" min="4" max="12" oninput="calcSprint()">
+              </div>
+              <div class="form-row">
+                <label>Story points per ideal hour</label>
+                <input type="number" id="sc-pts" value="0.5" step="0.1" min="0.1" max="2" oninput="calcSprint()">
+              </div>
+              <div class="capacity-output">
+                <div class="capacity-number" id="sprint-pts">140</div>
+                <div class="text-sm text-muted">available story points</div>
+                <div id="sprint-hours" class="text-sm" style="margin-top:4px;color:var(--green)">280 ideal hours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-icon icon-jira">💡</div><h3>Capacity Tips</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:10px" class="text-sm">
+                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--green)">
+                  <strong>Rule of thumb:</strong> Start with 70% focus factor. Adjust down if the team has many meetings or concurrent projects.
+                </div>
+                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--aha)">
+                  <strong>Buffer:</strong> Reserve 10–20% of capacity for unplanned work / bugs.
+                </div>
+                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--jira)">
+                  <strong>Velocity vs. Capacity:</strong> Use actual team velocity from past 3 sprints as a sanity check against this number.
+                </div>
+                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--amber)">
+                  <strong>PTO:</strong> Subtract 1 member's capacity for every 2 days PTO in the sprint.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Release checklist -->
+      <div id="tools-checklist" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon icon-aha">✅</div>
+              <h3>Release Readiness Checklist</h3>
+              <button class="btn btn-ghost btn-sm" onclick="resetChecklist('release')">↺ Reset</button>
+            </div>
+            <div class="card-body">
+              <ul class="checklist" id="release-checklist">
+                <li><input type="checkbox" id="rc1" onchange="checkItem(this)"><label for="rc1">All features for this release are in "Shipped" status in Aha</label></li>
+                <li><input type="checkbox" id="rc2" onchange="checkItem(this)"><label for="rc2">All linked Jira stories are closed / Done</label></li>
+                <li><input type="checkbox" id="rc3" onchange="checkItem(this)"><label for="rc3">Release notes drafted and reviewed</label></li>
+                <li><input type="checkbox" id="rc4" onchange="checkItem(this)"><label for="rc4">QA sign-off received</label></li>
+                <li><input type="checkbox" id="rc5" onchange="checkItem(this)"><label for="rc5">Security review completed</label></li>
+                <li><input type="checkbox" id="rc6" onchange="checkItem(this)"><label for="rc6">Documentation updated</label></li>
+                <li><input type="checkbox" id="rc7" onchange="checkItem(this)"><label for="rc7">Stakeholder communication sent</label></li>
+                <li><input type="checkbox" id="rc8" onchange="checkItem(this)"><label for="rc8">Deployment plan confirmed with DevOps</label></li>
+                <li><input type="checkbox" id="rc9" onchange="checkItem(this)"><label for="rc9">Rollback plan documented</label></li>
+                <li><input type="checkbox" id="rc10" onchange="checkItem(this)"><label for="rc10">Monitoring &amp; alerts configured</label></li>
+              </ul>
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px" class="text-sm">
+                  <span id="release-progress-label">0/10 complete</span>
+                  <span id="release-progress-pct" style="color:var(--text-muted)">0%</span>
+                </div>
+                <div class="progress-bar-wrap"><div class="progress-bar" id="release-progress-bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon icon-jira">🎯</div>
+              <h3>Sprint Kick-off Checklist</h3>
+              <button class="btn btn-ghost btn-sm" onclick="resetChecklist('sprint')">↺ Reset</button>
+            </div>
+            <div class="card-body">
+              <ul class="checklist" id="sprint-checklist">
+                <li><input type="checkbox" id="sc1" onchange="checkItem(this)"><label for="sc1">Sprint goal defined and shared with team</label></li>
+                <li><input type="checkbox" id="sc2" onchange="checkItem(this)"><label for="sc2">All stories estimated in Jira</label></li>
+                <li><input type="checkbox" id="sc3" onchange="checkItem(this)"><label for="sc3">Stories linked to Aha features</label></li>
+                <li><input type="checkbox" id="sc4" onchange="checkItem(this)"><label for="sc4">Capacity calculated (see Sprint Capacity tool)</label></li>
+                <li><input type="checkbox" id="sc5" onchange="checkItem(this)"><label for="sc5">Dependencies identified and flagged</label></li>
+                <li><input type="checkbox" id="sc6" onchange="checkItem(this)"><label for="sc6">Acceptance criteria written for all stories</label></li>
+                <li><input type="checkbox" id="sc7" onchange="checkItem(this)"><label for="sc7">Jira sprint created and stories moved in</label></li>
+                <li><input type="checkbox" id="sc8" onchange="checkItem(this)"><label for="sc8">PTO / leave entered in Jira capacity</label></li>
+              </ul>
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px" class="text-sm">
+                  <span id="sprint-progress-label">0/8 complete</span>
+                  <span id="sprint-progress-pct" style="color:var(--text-muted)">0%</span>
+                </div>
+                <div class="progress-bar-wrap"><div class="progress-bar" id="sprint-progress-bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DoD -->
+      <div id="tools-dod" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-icon icon-green">📋</div><h3>Definition of Done</h3></div>
+          <div class="card-body">
+            <div class="grid-3">
+              <div>
+                <div class="font-bold mb-8" style="color:var(--aha)">🔨 Engineering</div>
+                <ul class="checklist" id="dod-eng"></ul>
+              </div>
+              <div>
+                <div class="font-bold mb-8" style="color:var(--jira)">🧪 Quality</div>
+                <ul class="checklist" id="dod-qa"></ul>
+              </div>
+              <div>
+                <div class="font-bold mb-8" style="color:var(--green)">📣 Product</div>
+                <ul class="checklist" id="dod-product"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ PRODUCTS ══════════════════════ -->
+    <div class="section" id="section-products">
+      <div class="page-header">
+        <h2>📦 Products</h2>
+        <p>Your product portfolio — links to Aha roadmaps and Jira boards.</p>
+      </div>
+      <div class="alert alert-amber">
+        ✏️ Edit your products in <strong>Settings</strong>. Add Aha &amp; Jira URLs for each product to make cards fully clickable.
+      </div>
+      <div class="grid-3" id="products-grid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ AI ASSIST ═════════════════════ -->
+    <div class="section" id="section-ai">
+      <div class="page-header">
+        <h2>✨ AI Assist</h2>
+        <p>Coming soon — natural language feature creation in Aha &amp; Jira via Cursor + Claude MCP.</p>
+      </div>
+
+      <div class="alert alert-info">
+        🔌 These tools will use the <strong>Aha API</strong> (via Cursor) and <strong>Claude MCP</strong> for Jira. The forms are ready — wire up the API keys when you're set.
+      </div>
+
+      <div class="grid-2">
+        <!-- Create Aha Feature -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon icon-aha">🤖</div>
+            <h3>Create Aha Feature via AI</h3>
+            <span class="tag tag-ai">Cursor + Aha API</span>
+          </div>
+          <div class="card-body">
+            <div class="coming-soon-wrap" style="min-height:340px">
+              <div style="opacity:.35">
+                <div class="form-row">
+                  <label>Describe the feature (plain language)</label>
+                  <textarea placeholder="e.g. Allow users to reset their password via email. It should send a secure one-time link valid for 15 minutes." style="min-height:100px"></textarea>
+                </div>
+                <div class="form-row">
+                  <label>Product</label>
+                  <select><option>— select product —</option></select>
+                </div>
+                <div class="form-row">
+                  <label>Target release</label>
+                  <input type="text" placeholder="e.g. Q4 2026">
+                </div>
+                <div class="form-row">
+                  <label>Priority</label>
+                  <select><option>P2 - High</option></select>
+                </div>
+                <div class="flex-end">
+                  <button class="btn btn-primary">✨ Create in Aha</button>
+                </div>
+              </div>
+              <div class="coming-soon-overlay">
+                <div class="cs-badge">Coming soon</div>
+                <p>Wire up your Aha API key in Settings and point Cursor at this endpoint to activate</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Create Jira ticket -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon icon-jira">🔌</div>
+            <h3>Create Jira Ticket via Claude MCP</h3>
+            <span class="tag tag-ai">Claude MCP</span>
+          </div>
+          <div class="card-body">
+            <div class="coming-soon-wrap" style="min-height:340px">
+              <div style="opacity:.35">
+                <div class="form-row">
+                  <label>Story description (plain language)</label>
+                  <textarea placeholder="e.g. As a user, I want to reset my password so I can regain access to my account when I forget it." style="min-height:100px"></textarea>
+                </div>
+                <div class="form-row">
+                  <label>Jira project</label>
+                  <select><option>— select project —</option></select>
+                </div>
+                <div class="form-row">
+                  <label>Issue type</label>
+                  <select><option>Story</option><option>Bug</option><option>Task</option></select>
+                </div>
+                <div class="form-row">
+                  <label>Link to Aha feature</label>
+                  <input type="text" placeholder="AHA-1234 (optional)">
+                </div>
+                <div class="flex-end">
+                  <button class="btn btn-jira">🔌 Create in Jira</button>
+                </div>
+              </div>
+              <div class="coming-soon-overlay">
+                <div class="cs-badge">Coming soon</div>
+                <p>Configure Claude MCP server with Jira credentials to activate this</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-24">
+        <div class="card-header">
+          <div class="card-icon icon-ai">📐</div>
+          <h3>Integration Architecture</h3>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:16px 0">
+            <div style="text-align:center;padding:16px 20px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+              <div style="font-size:28px">🧑‍💻</div>
+              <div class="font-bold text-sm">You (PM)</div>
+              <div class="text-sm text-muted">Natural language</div>
+            </div>
+            <div style="font-size:24px;padding:0 12px;color:var(--text-muted)">→</div>
+            <div style="text-align:center;padding:16px 20px;background:var(--ai-light);border-radius:10px;border:1px solid var(--ai)">
+              <div style="font-size:28px">🤖</div>
+              <div class="font-bold text-sm">Cursor / Claude</div>
+              <div class="text-sm text-muted">AI reasoning</div>
+            </div>
+            <div style="font-size:24px;padding:0 12px;color:var(--text-muted)">→</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="text-align:center;padding:12px 16px;background:var(--aha-light);border-radius:10px;border:1px solid var(--aha)">
+                <div style="font-size:22px">🚀</div>
+                <div class="font-bold text-sm">Aha! API</div>
+                <div class="text-sm text-muted">Feature created</div>
+              </div>
+              <div style="text-align:center;padding:12px 16px;background:var(--jira-light);border-radius:10px;border:1px solid var(--jira)">
+                <div style="font-size:22px">🔗</div>
+                <div class="font-bold text-sm">Jira MCP</div>
+                <div class="text-sm text-muted">Story created</div>
+              </div>
+            </div>
+            <div style="font-size:24px;padding:0 12px;color:var(--text-muted)">→</div>
+            <div style="text-align:center;padding:16px 20px;background:var(--green-light);border-radius:10px;border:1px solid var(--green)">
+              <div style="font-size:28px">🔄</div>
+              <div class="font-bold text-sm">Auto-sync</div>
+              <div class="text-sm text-muted">Aha ↔ Jira linked</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ SETTINGS ══════════════════════ -->
+    <div class="section" id="section-settings">
+      <div class="page-header">
+        <h2>⚙️ Settings</h2>
+        <p>Configure your workspace URLs and products. Saved to browser local storage.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-icon icon-aha">🚀</div><h3>Aha! Configuration</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <label>Aha Workspace URL</label>
+              <input id="cfg-aha-url" type="url" placeholder="https://yourcompany.aha.io">
+            </div>
+            <div class="form-row">
+              <label>Default Product / Workspace (slug)</label>
+              <input id="cfg-aha-product" type="text" placeholder="e.g. MY-PRODUCT">
+            </div>
+            <div class="form-row">
+              <label>Aha API Key (for future AI Assist)</label>
+              <input id="cfg-aha-api" type="password" placeholder="aha_api_key_…">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon icon-jira">🔗</div><h3>Jira Configuration</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <label>Jira Base URL</label>
+              <input id="cfg-jira-url" type="url" placeholder="https://yourcompany.atlassian.net">
+            </div>
+            <div class="form-row">
+              <label>Default Jira Project Key</label>
+              <input id="cfg-jira-project" type="text" placeholder="e.g. PROJ">
+            </div>
+            <div class="form-row">
+              <label>Jira API Token (for future Claude MCP)</label>
+              <input id="cfg-jira-api" type="password" placeholder="your jira api token">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-header"><div class="card-icon icon-ai">☁️</div><h3>GitHub / Amplify Publishing</h3></div>
+        <div class="card-body">
+          <div class="alert alert-info" style="margin-bottom:16px">
+            🔐 The PAT is stored only in your browser's localStorage — it never leaves your machine except to call the GitHub API directly.
+            Create a PAT at <strong>GitHub → Settings → Developer settings → Fine-grained tokens</strong> with <strong>Contents: Read &amp; Write</strong> on this repo.
+          </div>
+          <div class="grid-3">
+            <div class="form-row">
+              <label>GitHub Repo (owner/repo)</label>
+              <input id="cfg-gh-repo" type="text" placeholder="e.g. acme/pm-portal">
+            </div>
+            <div class="form-row">
+              <label>Branch</label>
+              <input id="cfg-gh-branch" type="text" placeholder="main">
+            </div>
+            <div class="form-row">
+              <label>Personal Access Token (PAT)</label>
+              <input id="cfg-gh-pat" type="password" placeholder="github_pat_…">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-header"><div class="card-icon icon-green">📦</div><h3>Products</h3></div>
+        <div class="card-body">
+          <div id="products-cfg-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+          <button class="btn btn-outline btn-sm" onclick="addProduct()">+ Add product</button>
+        </div>
+      </div>
+
+      <div class="flex-end mt-16">
+        <button class="btn btn-ghost" onclick="clearSettings()">Clear all</button>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save settings</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast">Copied!</div>
+
+<!-- Add Link Modal -->
+<div class="modal-backdrop" id="add-link-modal" onclick="closeModalOnBackdrop(event)">
+  <div class="modal">
+    <h3>Add Custom Link</h3>
+    <div class="form-row">
+      <label>Emoji icon</label>
+      <input id="al-emoji" type="text" value="🔗" maxlength="4" style="width:70px">
+    </div>
+    <div class="form-row">
+      <label>Label</label>
+      <input id="al-label" type="text" placeholder="e.g. Our Confluence">
+    </div>
+    <div class="form-row">
+      <label>Description (optional)</label>
+      <input id="al-desc" type="text" placeholder="Short description">
+    </div>
+    <div class="form-row">
+      <label>URL</label>
+      <input id="al-url" type="url" placeholder="https://…">
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-ghost" onclick="closeAddLinkModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomLink()">Add link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin PIN Modal -->
+<div class="modal-backdrop" id="admin-pin-modal" onclick="closePinModalOnBackdrop(event)">
+  <div class="modal" style="width:340px">
+    <h3>🔐 Admin Access</h3>
+    <p class="text-sm text-muted mb-16">Enter the admin PIN to unlock editing.</p>
+    <div class="form-row">
+      <label>PIN</label>
+      <input id="admin-pin-input" type="password" placeholder="••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')verifyPin()">
+    </div>
+    <div id="pin-error" class="text-sm" style="color:var(--red);margin-bottom:12px;display:none">Incorrect PIN.</div>
+    <div class="flex-end">
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="verifyPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────
+const S = {
+  ahaUrl: '',
+  ahaProduct: '',
+  ahaApi: '',
+  jiraUrl: '',
+  jiraProject: '',
+  jiraApi: '',
+  ghRepo: '',
+  ghBranch: 'main',
+  ghPat: '',
+  products: [
+    { name: 'Product A', emoji: '📱', ahaUrl: '', jiraUrl: '', status: 'active', owner: '' },
+    { name: 'Product B', emoji: '🖥️', ahaUrl: '', jiraUrl: '', status: 'active', owner: '' },
+  ]
+};
+
+function loadSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('pm-portal-cfg') || '{}');
+    Object.assign(S, saved);
+  } catch(e) {}
+  applySettings();
+}
+
+function applySettings() {
+  const get = id => document.getElementById(id);
+  if(get('cfg-aha-url'))     get('cfg-aha-url').value     = S.ahaUrl;
+  if(get('cfg-aha-product')) get('cfg-aha-product').value = S.ahaProduct;
+  if(get('cfg-aha-api'))     get('cfg-aha-api').value     = S.ahaApi;
+  if(get('cfg-jira-url'))    get('cfg-jira-url').value    = S.jiraUrl;
+  if(get('cfg-jira-project'))get('cfg-jira-project').value= S.jiraProject;
+  if(get('cfg-jira-api'))    get('cfg-jira-api').value    = S.jiraApi;
+  if(get('cfg-gh-repo'))     get('cfg-gh-repo').value     = S.ghRepo;
+  if(get('cfg-gh-branch'))   get('cfg-gh-branch').value   = S.ghBranch;
+  if(get('cfg-gh-pat'))      get('cfg-gh-pat').value      = S.ghPat;
+  renderProductsCfg();
+  renderProductsGrid();
+}
+
+function saveSettings() {
+  S.ahaUrl      = document.getElementById('cfg-aha-url').value.trim().replace(/\/$/,'');
+  S.ahaProduct  = document.getElementById('cfg-aha-product').value.trim();
+  S.ahaApi      = document.getElementById('cfg-aha-api').value.trim();
+  S.jiraUrl     = document.getElementById('cfg-jira-url').value.trim().replace(/\/$/,'');
+  S.jiraProject = document.getElementById('cfg-jira-project').value.trim();
+  S.jiraApi     = document.getElementById('cfg-jira-api').value.trim();
+  S.ghRepo      = document.getElementById('cfg-gh-repo').value.trim();
+  S.ghBranch    = document.getElementById('cfg-gh-branch').value.trim() || 'main';
+  S.ghPat       = document.getElementById('cfg-gh-pat').value.trim();
+  collectProductsCfg();
+  localStorage.setItem('pm-portal-cfg', JSON.stringify(S));
+  toast('Settings saved ✓');
+  renderProductsGrid();
+}
+
+function clearSettings() {
+  if (!confirm('Clear all settings?')) return;
+  localStorage.removeItem('pm-portal-cfg');
+  location.reload();
+}
+
+// ── Navigation ───────────────────────────────────────────────────
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = {
+    dashboard: ['Dashboard', 'Welcome back'],
+    aha:       ['Aha! Workspace', 'Links, builder & tips'],
+    jira:      ['Jira ↔ Aha', 'Mappings & sync rules'],
+    pmtools:   ['PM Tools', 'RICE, Sprint, Checklists'],
+    products:  ['Products', 'Your portfolio'],
+    ai:        ['AI Assist', 'Coming soon'],
+    settings:  ['Settings', 'Configure your workspace']
+  };
+  const t = titles[name] || [name, ''];
+  document.getElementById('topbar-title').innerHTML = t[0] + ' <span id="topbar-sub">' + t[1] + '</span>';
+}
+
+function showPillTab(group, tab, btn) {
+  const prefix = group === 'aha' ? 'aha-' : group === 'jira' ? 'jira-' : 'tools-';
+  const prefixedId = prefix + tab;
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => el.style.display = 'none');
+  document.getElementById(prefixedId).style.display = 'block';
+  btn.closest('.pill-tabs').querySelectorAll('.pill-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Theme ────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-icon').textContent  = isDark ? '🌙' : '☀️';
+  document.getElementById('theme-label').textContent = isDark ? 'Dark mode' : 'Light mode';
+  localStorage.setItem('pm-portal-theme', isDark ? 'light' : 'dark');
+}
+
+// ── Aha / Jira URL helpers ───────────────────────────────────────
+function openAha(e) {
+  e.preventDefault();
+  if (!S.ahaUrl) { toast('Set your Aha URL in Settings first'); return; }
+  window.open(S.ahaUrl, '_blank');
+}
+function openJira(e) {
+  e.preventDefault();
+  if (!S.jiraUrl) { toast('Set your Jira URL in Settings first'); return; }
+  window.open(S.jiraUrl, '_blank');
+}
+function openAhaPath(e, path) {
+  e.preventDefault();
+  if (!S.ahaUrl) { toast('Set your Aha URL in Settings first'); return; }
+  const base = S.ahaUrl + (S.ahaProduct ? '/products/' + S.ahaProduct : '');
+  window.open(base + (path ? '/' + path : ''), '_blank');
+}
+function openJiraPath(e, path) {
+  e.preventDefault();
+  if (!S.jiraUrl) { toast('Set your Jira URL in Settings first'); return; }
+  const base = S.jiraUrl + (S.jiraProject ? '/jira/software/projects/' + S.jiraProject + '/boards' : '');
+  window.open(base, '_blank');
+}
+
+// ── Feature URL Builder ──────────────────────────────────────────
+function buildFeatureUrl() {
+  const name     = document.getElementById('fb-name').value.trim();
+  const desc     = document.getElementById('fb-desc').value.trim();
+  const release  = document.getElementById('fb-release').value.trim();
+  const priority = document.getElementById('fb-priority').value;
+
+  const urlBox = document.getElementById('feature-url-box');
+  const promptBox = document.getElementById('cursor-prompt-box');
+
+  if (!name) {
+    urlBox.textContent = 'Fill in at least the Feature Name above…';
+    promptBox.textContent = 'Fill in the Feature Builder on the left to generate a Cursor prompt…';
+    return;
+  }
+
+  const base = S.ahaUrl ? S.ahaUrl + (S.ahaProduct ? '/products/' + S.ahaProduct : '') : 'https://yourcompany.aha.io';
+  const params = new URLSearchParams();
+  if (name) params.set('name', name);
+  if (desc) params.set('description', desc);
+  if (release) params.set('release', release);
+
+  const url = base + '/features/new?' + params.toString();
+  urlBox.textContent = url;
+
+  const prompt = `Using the Aha! API, create a new feature with these details:\n\n` +
+    `Name: ${name}\n` +
+    (desc     ? `Description: ${desc}\n`     : '') +
+    (release  ? `Target Release: ${release}\n`: '') +
+    (priority ? `Priority: ${priority}\n`    : '') +
+    `\nWorkspace URL: ${base}\n\n` +
+    `Steps:\n1. Use POST /api/v1/features with the Aha API key from env AHA_API_KEY\n` +
+    `2. Map priority to Aha score field\n3. Return the created feature URL`;
+  promptBox.textContent = prompt;
+}
+
+function copyFeatureUrl() {
+  const text = document.getElementById('feature-url-box').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('URL copied!'));
+}
+function openFeatureUrl() {
+  const url = document.getElementById('feature-url-box').textContent;
+  if (url.startsWith('Fill')) { toast('Build the URL first'); return; }
+  window.open(url, '_blank');
+}
+function copyCursorPrompt() {
+  const text = document.getElementById('cursor-prompt-box').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('Cursor prompt copied!'));
+}
+
+// ── RICE ─────────────────────────────────────────────────────────
+function calcRice() {
+  const r = parseFloat(document.getElementById('r').value);
+  const i = parseFloat(document.getElementById('i').value);
+  const c = parseFloat(document.getElementById('c').value) / 100;
+  const e = parseFloat(document.getElementById('e').value);
+  const score = Math.round((r * i * c) / e);
+
+  document.getElementById('rice-score').textContent = score.toLocaleString();
+  document.getElementById('i-val').textContent = i + '×';
+
+  const tierEl = document.getElementById('rice-tier');
+  if (score > 500)       { tierEl.className = 'tag tag-green'; tierEl.textContent = '🟢 Must do'; }
+  else if (score > 200)  { tierEl.className = 'tag tag-aha';   tierEl.textContent = '🟣 High Priority'; }
+  else if (score > 50)   { tierEl.className = 'tag tag-amber'; tierEl.textContent = '🟡 Medium Priority'; }
+  else                   { tierEl.className = 'tag tag-red';   tierEl.textContent = '🔴 Low Priority'; }
+}
+
+// ── Sprint capacity ───────────────────────────────────────────────
+function calcSprint() {
+  const members = parseFloat(document.getElementById('sc-members').value) || 0;
+  const days    = parseFloat(document.getElementById('sc-days').value)    || 0;
+  const focus   = parseFloat(document.getElementById('sc-focus').value)   / 100;
+  const hours   = parseFloat(document.getElementById('sc-hours').value)   || 0;
+  const pts     = parseFloat(document.getElementById('sc-pts').value)     || 0;
+
+  const idealHours = Math.round(members * days * focus * hours);
+  const storyPts   = Math.round(idealHours * pts);
+  document.getElementById('sprint-pts').textContent  = storyPts;
+  document.getElementById('sprint-hours').textContent = idealHours + ' ideal hours';
+}
+
+// ── Checklists ────────────────────────────────────────────────────
+function checkItem(cb) {
+  cb.closest('li').classList.toggle('done', cb.checked);
+  updateProgress();
+}
+
+function updateProgress() {
+  ['release', 'sprint'].forEach(id => {
+    const list  = document.getElementById(id + '-checklist');
+    if (!list) return;
+    const total = list.querySelectorAll('input[type=checkbox]').length;
+    const done  = list.querySelectorAll('input[type=checkbox]:checked').length;
+    const pct   = total ? Math.round(done / total * 100) : 0;
+    document.getElementById(id + '-progress-label').textContent = done + '/' + total + ' complete';
+    document.getElementById(id + '-progress-pct').textContent   = pct + '%';
+    document.getElementById(id + '-progress-bar').style.width   = pct + '%';
+  });
+}
+
+function resetChecklist(id) {
+  document.getElementById(id + '-checklist').querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('li').classList.remove('done');
+  });
+  updateProgress();
+}
+
+// ── Definition of Done ────────────────────────────────────────────
+function initDoD() {
+  const eng = ['Code reviewed (PR approved by ≥1 reviewer)', 'Unit tests passing', 'No new linting errors', 'Feature flag configured if needed', 'Migration scripts tested'];
+  const qa  = ['Acceptance criteria met', 'Regression tests run', 'Edge cases covered', 'Performance tested (if relevant)', 'Accessibility checked'];
+  const prd = ['Aha feature moved to "Shipped"', 'Jira story closed', 'Release notes updated', 'Stakeholders notified', 'Demo recorded or linked'];
+
+  [['dod-eng', eng], ['dod-qa', qa], ['dod-product', prd]].forEach(([id, items]) => {
+    const ul = document.getElementById(id);
+    items.forEach((text, i) => {
+      ul.innerHTML += `<li><input type="checkbox" id="${id}-${i}" onchange="checkItem(this)"><label for="${id}-${i}">${text}</label></li>`;
+    });
+  });
+}
+
+// ── Products ──────────────────────────────────────────────────────
+function renderProductsGrid() {
+  const grid = document.getElementById('products-grid');
+  if (!grid) return;
+  grid.innerHTML = S.products.map((p, i) => `
+    <div class="card" style="overflow:hidden">
+      <div style="height:5px;background:linear-gradient(90deg,var(--aha),var(--ai))"></div>
+      <div class="card-body">
+        <div style="font-size:32px;margin-bottom:10px">${p.emoji || '📦'}</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:4px">${p.name}</div>
+        ${p.owner ? `<div class="text-sm text-muted mb-8">👤 ${p.owner}</div>` : ''}
+        <span class="tag ${p.status === 'active' ? 'tag-green' : 'tag-amber'}" style="margin-bottom:14px">${p.status || 'active'}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          ${p.ahaUrl ? `<a href="${p.ahaUrl}" target="_blank" class="btn btn-primary btn-sm">🚀 Aha</a>` : `<button class="btn btn-outline btn-sm" onclick="showSection('settings',null)">+ Aha link</button>`}
+          ${p.jiraUrl ? `<a href="${p.jiraUrl}" target="_blank" class="btn btn-jira btn-sm">🔗 Jira</a>` : `<button class="btn btn-outline btn-sm" onclick="showSection('settings',null)">+ Jira link</button>`}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderProductsCfg() {
+  const list = document.getElementById('products-cfg-list');
+  if (!list) return;
+  list.innerHTML = S.products.map((p, i) => `
+    <div style="display:grid;grid-template-columns:40px 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center" data-idx="${i}">
+      <input type="text" value="${p.emoji || '📦'}" style="width:40px;text-align:center;padding:7px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:16px" oninput="S.products[${i}].emoji=this.value">
+      <input type="text" value="${p.name}" placeholder="Product name" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="S.products[${i}].name=this.value">
+      <input type="text" value="${p.owner}" placeholder="Owner" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="S.products[${i}].owner=this.value">
+      <input type="url" value="${p.ahaUrl}" placeholder="Aha URL" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="S.products[${i}].ahaUrl=this.value">
+      <input type="url" value="${p.jiraUrl}" placeholder="Jira URL" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="S.products[${i}].jiraUrl=this.value">
+      <button class="btn btn-ghost btn-sm" onclick="removeProduct(${i})" style="color:var(--red)">✕</button>
+    </div>
+  `).join('');
+}
+
+function collectProductsCfg() {
+  // Products are updated live via oninput handlers
+}
+
+function addProduct() {
+  S.products.push({ name: 'New Product', emoji: '📦', ahaUrl: '', jiraUrl: '', status: 'active', owner: '' });
+  renderProductsCfg();
+}
+
+function removeProduct(i) {
+  S.products.splice(i, 1);
+  renderProductsCfg();
+  renderProductsGrid();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── GitHub publish ────────────────────────────────────────────────
+function buildConfigPayload() {
+  return {
+    settings: {
+      ahaUrl:      S.ahaUrl,
+      ahaProduct:  S.ahaProduct,
+      jiraUrl:     S.jiraUrl,
+      jiraProject: S.jiraProject,
+      products:    S.products,
+    },
+    customLinks
+  };
+}
+
+async function publishToGitHub() {
+  if (!S.ghRepo || !S.ghPat) {
+    toast('Set GitHub repo and PAT in Settings first');
+    showSection('settings', null);
+    return;
+  }
+
+  const btn  = document.getElementById('publish-btn');
+  const icon = document.getElementById('publish-icon');
+  btn.disabled = true;
+  icon.textContent = '⏳';
+
+  const path    = 'config.json';
+  const content = JSON.stringify(buildConfigPayload(), null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  const apiBase = `https://api.github.com/repos/${S.ghRepo}/contents/${path}`;
+  const headers = {
+    'Authorization': `Bearer ${S.ghPat}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    // get current SHA if file exists (required for update)
+    let sha;
+    const existing = await fetch(apiBase, { headers });
+    if (existing.ok) {
+      const data = await existing.json();
+      sha = data.sha;
+    } else if (existing.status !== 404) {
+      throw new Error(`GitHub API error: ${existing.status}`);
+    }
+
+    const body = {
+      message: 'chore: update portal config',
+      content: encoded,
+      branch: S.ghBranch || 'main'
+    };
+    if (sha) body.sha = sha;
+
+    const put = await fetch(apiBase, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    if (!put.ok) {
+      const err = await put.json();
+      throw new Error(err.message || put.status);
+    }
+
+    icon.textContent = '✅';
+    toast('Published to GitHub ✓ — Amplify will redeploy shortly');
+    setTimeout(() => { icon.textContent = '☁️'; btn.disabled = false; }, 3000);
+  } catch(e) {
+    icon.textContent = '❌';
+    toast('Publish failed: ' + e.message);
+    setTimeout(() => { icon.textContent = '☁️'; btn.disabled = false; }, 3000);
+  }
+}
+
+// ── Admin mode ────────────────────────────────────────────────────
+const ADMIN_PIN_KEY  = 'pm-portal-admin-pin';
+const ADMIN_LINKS_KEY = 'pm-portal-custom-links';
+let adminMode = false;
+let pendingLinkTarget = null; // grid id
+
+// customLinks: { [gridId]: [{emoji, label, desc, url}] }
+let customLinks = {};
+
+function loadCustomLinks() {
+  try { customLinks = JSON.parse(localStorage.getItem(ADMIN_LINKS_KEY) || '{}'); } catch(e) {}
+  Object.keys(customLinks).forEach(gridId => renderCustomLinks(gridId));
+}
+
+function renderCustomLinks(gridId) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  // remove previously rendered custom links
+  grid.querySelectorAll('.custom').forEach(el => el.remove());
+  // insert before the add-link-card (last child)
+  const addCard = grid.querySelector('.add-link-card');
+  (customLinks[gridId] || []).forEach((link, idx) => {
+    const el = document.createElement('a');
+    el.className = 'quick-link custom';
+    el.href = link.url;
+    el.target = '_blank';
+    el.rel = 'noopener';
+    el.innerHTML = `
+      <button class="ql-admin-delete" title="Remove" onclick="removeCustomLink(event,'${gridId}',${idx})">✕</button>
+      <span class="ql-icon">${link.emoji || '🔗'}</span>
+      <span class="ql-label">${link.label}</span>
+      ${link.desc ? `<span class="ql-desc">${link.desc}</span>` : ''}
+    `;
+    if (addCard) grid.insertBefore(el, addCard);
+    else grid.appendChild(el);
+  });
+}
+
+function removeCustomLink(e, gridId, idx) {
+  e.preventDefault(); e.stopPropagation();
+  if (!adminMode) return;
+  customLinks[gridId] = (customLinks[gridId] || []).filter((_, i) => i !== idx);
+  localStorage.setItem(ADMIN_LINKS_KEY, JSON.stringify(customLinks));
+  renderCustomLinks(gridId);
+}
+
+// Modal
+function openAddLinkModal(gridId) {
+  if (!adminMode) return;
+  pendingLinkTarget = gridId;
+  document.getElementById('al-emoji').value = '🔗';
+  document.getElementById('al-label').value = '';
+  document.getElementById('al-desc').value  = '';
+  document.getElementById('al-url').value   = '';
+  document.getElementById('add-link-modal').classList.add('open');
+  setTimeout(() => document.getElementById('al-label').focus(), 100);
+}
+function closeAddLinkModal() {
+  document.getElementById('add-link-modal').classList.remove('open');
+  pendingLinkTarget = null;
+}
+function closeModalOnBackdrop(e) {
+  if (e.target === document.getElementById('add-link-modal')) closeAddLinkModal();
+}
+function saveCustomLink() {
+  const label = document.getElementById('al-label').value.trim();
+  const url   = document.getElementById('al-url').value.trim();
+  if (!label || !url) { toast('Label and URL are required'); return; }
+  const entry = {
+    emoji: document.getElementById('al-emoji').value.trim() || '🔗',
+    label,
+    desc: document.getElementById('al-desc').value.trim(),
+    url
+  };
+  if (!customLinks[pendingLinkTarget]) customLinks[pendingLinkTarget] = [];
+  customLinks[pendingLinkTarget].push(entry);
+  localStorage.setItem(ADMIN_LINKS_KEY, JSON.stringify(customLinks));
+  renderCustomLinks(pendingLinkTarget);
+  closeAddLinkModal();
+  toast('Link added ✓');
+}
+
+// PIN
+function toggleAdmin() {
+  if (adminMode) { exitAdmin(); return; }
+  const pin = localStorage.getItem(ADMIN_PIN_KEY);
+  if (!pin) {
+    // first time — prompt to set a PIN
+    const newPin = prompt('Set an admin PIN (you\'ll need this to unlock admin mode):');
+    if (!newPin || !newPin.trim()) return;
+    localStorage.setItem(ADMIN_PIN_KEY, newPin.trim());
+    enterAdmin();
+  } else {
+    document.getElementById('admin-pin-input').value = '';
+    document.getElementById('pin-error').style.display = 'none';
+    document.getElementById('admin-pin-modal').classList.add('open');
+    setTimeout(() => document.getElementById('admin-pin-input').focus(), 100);
+  }
+}
+function verifyPin() {
+  const input   = document.getElementById('admin-pin-input').value;
+  const stored  = localStorage.getItem(ADMIN_PIN_KEY);
+  if (input === stored) {
+    closePinModal();
+    enterAdmin();
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('admin-pin-input').value = '';
+    document.getElementById('admin-pin-input').focus();
+  }
+}
+function closePinModal() {
+  document.getElementById('admin-pin-modal').classList.remove('open');
+}
+function closePinModalOnBackdrop(e) {
+  if (e.target === document.getElementById('admin-pin-modal')) closePinModal();
+}
+function enterAdmin() {
+  adminMode = true;
+  document.body.classList.add('admin-mode');
+  document.getElementById('admin-bar').classList.add('visible');
+  document.getElementById('admin-label').textContent = 'Exit admin';
+  document.getElementById('admin-toggle-btn').classList.add('admin-active');
+}
+function exitAdmin() {
+  adminMode = false;
+  document.body.classList.remove('admin-mode');
+  document.getElementById('admin-bar').classList.remove('visible');
+  document.getElementById('admin-label').textContent = 'Admin';
+  document.getElementById('admin-toggle-btn').classList.remove('admin-active');
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+(async function init() {
+  const savedTheme = localStorage.getItem('pm-portal-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent  = savedTheme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('theme-label').textContent = savedTheme === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+
+  // Try loading config.json from same origin (Amplify deployment).
+  // Falls back to localStorage silently when running locally without the file.
+  try {
+    const res = await fetch('./config.json', { cache: 'no-store' });
+    if (res.ok) {
+      const cfg = await res.json();
+      if (cfg.settings)    Object.assign(S, cfg.settings);
+      if (cfg.customLinks) customLinks = cfg.customLinks;
+    }
+  } catch(e) { /* no config.json — use localStorage */ }
+
+  loadSettings();
+  loadCustomLinks();
+  calcRice();
+  calcSprint();
+  initDoD();
+  updateProgress();
+})();
+</script>
+</body>
+</html>
