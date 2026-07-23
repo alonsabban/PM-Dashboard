@@ -260,36 +260,6 @@ th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--bo
 th { font-weight: 700; color: var(--text-muted); background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
 tr:hover td { background: var(--surface2); }
 
-/* ── RICE Calculator ─────────────────────────────────────────────── */
-.rice-result {
-  text-align: center; padding: 24px 16px;
-  background: linear-gradient(135deg, var(--aha-light), var(--ai-light));
-  border-radius: 10px; margin-top: 16px;
-}
-.rice-score { font-size: 48px; font-weight: 900; color: var(--aha); line-height: 1; }
-.rice-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-
-/* ── Sprint Capacity ─────────────────────────────────────────────── */
-.capacity-output {
-  background: var(--green-light); border-radius: 10px;
-  padding: 20px; text-align: center; margin-top: 16px;
-}
-.capacity-number { font-size: 40px; font-weight: 900; color: var(--green); }
-
-/* ── Checklist ───────────────────────────────────────────────────── */
-.checklist { list-style: none; }
-.checklist li {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 9px 0; border-bottom: 1px solid var(--border);
-}
-.checklist li:last-child { border-bottom: none; }
-.checklist li input[type="checkbox"] {
-  width: 16px; height: 16px; margin-top: 1px; cursor: pointer;
-  accent-color: var(--aha); flex-shrink: 0;
-}
-.checklist li label { cursor: pointer; flex: 1; }
-.checklist li.done label { text-decoration: line-through; color: var(--text-muted); }
-
 /* ── Coming Soon overlay ─────────────────────────────────────────── */
 .coming-soon-wrap { position: relative; }
 .coming-soon-overlay {
@@ -393,6 +363,7 @@ body.admin-mode .quick-link.custom:hover .ql-admin-delete { display: flex; }
 [data-admin-only] { display: none !important; }
 body.admin-mode [data-admin-only] { display: flex !important; }
 body.admin-mode nav [data-admin-only] { display: block !important; }
+body.admin-mode div[data-admin-only] { display: block !important; }
 /* Modal */
 .modal-backdrop {
   position: fixed; inset: 0; background: rgba(15,23,42,.6);
@@ -410,6 +381,40 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
 .modal-backdrop.open .modal { transform: translateY(0); }
 .modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
 .nav-item.admin-active { background: var(--amber-light) !important; color: var(--amber) !important; }
+
+/* ── Icon Picker ─────────────────────────────────────────────────── */
+.icon-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.icon-picker-btn {
+  padding: 6px 10px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--bg); cursor: pointer; font-size: 16px; transition: all .15s; line-height: 1;
+}
+.icon-picker-btn:hover, .icon-picker-btn.selected { border-color: var(--aha); background: var(--aha-light); }
+
+/* ── Custom sections ─────────────────────────────────────────────── */
+.custom-section-card { position: relative; }
+.admin-section-delete {
+  position: absolute; top: 10px; right: 10px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--red); color: #fff; border: none; cursor: pointer;
+  font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 2;
+}
+body.admin-mode .custom-section-card:hover .admin-section-delete { display: flex; }
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+.empty-state .es-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ── Embedded app ────────────────────────────────────────────────── */
+.embed-frame {
+  width: 100%; border: none; border-radius: 8px;
+  display: block; background: var(--surface2);
+}
+.embed-edit-bar {
+  display: none; align-items: center; gap: 8px;
+  padding: 8px 0 0; font-size: 12px; color: var(--text-muted);
+}
+body.admin-mode .embed-edit-bar { display: flex; }
 </style>
 </head>
 <body>
@@ -515,8 +520,8 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
         </div>
         <div class="stat-tile">
           <div class="st-label">PM Tools</div>
-          <div class="st-val" style="color:var(--green)">5</div>
-          <div class="st-sub">RICE, Sprint, Checklists…</div>
+          <div class="st-val" style="color:var(--green)" id="dash-tools-count">—</div>
+          <div class="st-sub">Custom tool sections</div>
         </div>
         <div class="stat-tile">
           <div class="st-label">AI Assist</div>
@@ -533,26 +538,6 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
           </div>
           <div class="card-body">
             <div class="grid-2" style="gap:10px" id="dash-aha-links">
-              <a class="quick-link" href="#" onclick="openAhaPath(event,'')">
-                <span class="ql-icon">🗺️</span>
-                <span class="ql-label">Roadmap</span>
-                <span class="ql-desc">Visualize your strategy</span>
-              </a>
-              <a class="quick-link" href="#" onclick="openAhaPath(event,'features')">
-                <span class="ql-icon">✨</span>
-                <span class="ql-label">Features</span>
-                <span class="ql-desc">Backlog &amp; prioritization</span>
-              </a>
-              <a class="quick-link" href="#" onclick="openAhaPath(event,'releases')">
-                <span class="ql-icon">📦</span>
-                <span class="ql-label">Releases</span>
-                <span class="ql-desc">Plan &amp; track releases</span>
-              </a>
-              <a class="quick-link" href="#" onclick="openAhaPath(event,'ideas')">
-                <span class="ql-icon">💡</span>
-                <span class="ql-label">Ideas</span>
-                <span class="ql-desc">Idea portal &amp; votes</span>
-              </a>
               <!-- custom links injected here -->
               <div class="add-link-card" onclick="openAddLinkModal('dash-aha-links')">
                 <span style="font-size:22px">＋</span>
@@ -597,6 +582,12 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- custom dashboard sections -->
+      <div id="dashboard-sections-container" class="mt-24"></div>
+      <div class="admin-only-block" style="margin-top:12px;display:none">
+        <button class="btn btn-outline" onclick="openAddSectionModal('dashboard')">＋ Add section</button>
       </div>
 
       <div class="mt-24 card">
@@ -915,217 +906,16 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
     <div class="section" id="section-pmtools">
       <div class="page-header">
         <h2>🛠️ PM Tools</h2>
-        <p>Prioritization, capacity planning, and release checklists — all offline.</p>
+        <p>Your PM toolbox — add links to tools and resources you use.</p>
       </div>
 
-      <div class="pill-tabs">
-        <button class="pill-tab active" onclick="showPillTab('tools','rice',this)">RICE Score</button>
-        <button class="pill-tab" onclick="showPillTab('tools','sprint',this)">Sprint Capacity</button>
-        <button class="pill-tab" onclick="showPillTab('tools','checklist',this)">Release Checklist</button>
-        <button class="pill-tab" onclick="showPillTab('tools','dod',this)">Definition of Done</button>
+      <div id="pmtools-sections-container">
+        <!-- sections rendered by JS -->
       </div>
 
-      <!-- RICE -->
-      <div id="tools-rice">
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><div class="card-icon icon-aha">🎯</div><h3>RICE Prioritization Calculator</h3></div>
-            <div class="card-body">
-              <p class="text-sm text-muted mb-16">RICE = (Reach × Impact × Confidence) ÷ Effort</p>
-              <div class="form-row">
-                <label>Reach — how many users/month? <span id="r-val" style="color:var(--aha)">500</span></label>
-                <input type="range" id="r" min="0" max="10000" step="100" value="500" oninput="document.getElementById('r-val').textContent=this.value;calcRice()">
-              </div>
-              <div class="form-row">
-                <label>Impact — on each user? <span id="i-val" style="color:var(--aha)">2</span>×</label>
-                <select id="i" onchange="calcRice()">
-                  <option value="0.25">0.25 — Minimal</option>
-                  <option value="0.5">0.5 — Low</option>
-                  <option value="1">1 — Medium</option>
-                  <option value="2" selected>2 — High</option>
-                  <option value="3">3 — Massive</option>
-                </select>
-              </div>
-              <div class="form-row">
-                <label>Confidence — how sure? <span id="c-val" style="color:var(--aha)">80</span>%</label>
-                <input type="range" id="c" min="0" max="100" step="10" value="80" oninput="document.getElementById('c-val').textContent=this.value;calcRice()">
-              </div>
-              <div class="form-row">
-                <label>Effort — person-months <span id="e-val" style="color:var(--aha)">2</span></label>
-                <input type="range" id="e" min="0.5" max="12" step="0.5" value="2" oninput="document.getElementById('e-val').textContent=this.value;calcRice()">
-              </div>
-              <div class="rice-result">
-                <div class="rice-score" id="rice-score">400</div>
-                <div class="rice-label">RICE Score</div>
-                <div id="rice-tier" class="tag tag-green" style="margin-top:8px">High Priority</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div class="card-icon icon-amber">📊</div><h3>RICE Reference Guide</h3></div>
-            <div class="card-body">
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>RICE Range</th><th>Priority</th><th>Action</th></tr></thead>
-                  <tbody>
-                    <tr><td>&gt; 500</td><td><span class="tag tag-green">Must do</span></td><td>Schedule immediately</td></tr>
-                    <tr><td>200 – 500</td><td><span class="tag tag-aha">High</span></td><td>Next 1-2 sprints</td></tr>
-                    <tr><td>50 – 200</td><td><span class="tag tag-amber">Medium</span></td><td>Backlog refinement</td></tr>
-                    <tr><td>&lt; 50</td><td><span class="tag tag-red">Low</span></td><td>Revisit quarterly</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <hr class="divider">
-              <div style="display:flex;flex-direction:column;gap:8px" class="text-sm">
-                <p><strong>Reach:</strong> Users affected per period (month recommended)</p>
-                <p><strong>Impact:</strong> Use 3×/2×/1×/0.5×/0.25× scale only (keeps scores comparable)</p>
-                <p><strong>Confidence:</strong> 100% = hard data · 80% = some data · 50% = gut feel</p>
-                <p><strong>Effort:</strong> Total work in person-months across the whole team</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sprint capacity -->
-      <div id="tools-sprint" style="display:none">
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><div class="card-icon icon-green">📅</div><h3>Sprint Capacity Planner</h3></div>
-            <div class="card-body">
-              <div class="form-row">
-                <label>Team members</label>
-                <input type="number" id="sc-members" value="5" min="1" max="20" oninput="calcSprint()">
-              </div>
-              <div class="form-row">
-                <label>Sprint length (days)</label>
-                <input type="number" id="sc-days" value="10" min="1" max="30" oninput="calcSprint()">
-              </div>
-              <div class="form-row">
-                <label>Focus factor % (meetings, overhead) <span id="ff-val" style="color:var(--green)">70</span>%</label>
-                <input type="range" id="sc-focus" min="30" max="100" value="70" oninput="document.getElementById('ff-val').textContent=this.value;calcSprint()">
-              </div>
-              <div class="form-row">
-                <label>Hours per day</label>
-                <input type="number" id="sc-hours" value="8" min="4" max="12" oninput="calcSprint()">
-              </div>
-              <div class="form-row">
-                <label>Story points per ideal hour</label>
-                <input type="number" id="sc-pts" value="0.5" step="0.1" min="0.1" max="2" oninput="calcSprint()">
-              </div>
-              <div class="capacity-output">
-                <div class="capacity-number" id="sprint-pts">140</div>
-                <div class="text-sm text-muted">available story points</div>
-                <div id="sprint-hours" class="text-sm" style="margin-top:4px;color:var(--green)">280 ideal hours</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div class="card-icon icon-jira">💡</div><h3>Capacity Tips</h3></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:10px" class="text-sm">
-                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--green)">
-                  <strong>Rule of thumb:</strong> Start with 70% focus factor. Adjust down if the team has many meetings or concurrent projects.
-                </div>
-                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--aha)">
-                  <strong>Buffer:</strong> Reserve 10–20% of capacity for unplanned work / bugs.
-                </div>
-                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--jira)">
-                  <strong>Velocity vs. Capacity:</strong> Use actual team velocity from past 3 sprints as a sanity check against this number.
-                </div>
-                <div style="padding:10px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--amber)">
-                  <strong>PTO:</strong> Subtract 1 member's capacity for every 2 days PTO in the sprint.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Release checklist -->
-      <div id="tools-checklist" style="display:none">
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <div class="card-icon icon-aha">✅</div>
-              <h3>Release Readiness Checklist</h3>
-              <button class="btn btn-ghost btn-sm" onclick="resetChecklist('release')">↺ Reset</button>
-            </div>
-            <div class="card-body">
-              <ul class="checklist" id="release-checklist">
-                <li><input type="checkbox" id="rc1" onchange="checkItem(this)"><label for="rc1">All features for this release are in "Shipped" status in Aha</label></li>
-                <li><input type="checkbox" id="rc2" onchange="checkItem(this)"><label for="rc2">All linked Jira stories are closed / Done</label></li>
-                <li><input type="checkbox" id="rc3" onchange="checkItem(this)"><label for="rc3">Release notes drafted and reviewed</label></li>
-                <li><input type="checkbox" id="rc4" onchange="checkItem(this)"><label for="rc4">QA sign-off received</label></li>
-                <li><input type="checkbox" id="rc5" onchange="checkItem(this)"><label for="rc5">Security review completed</label></li>
-                <li><input type="checkbox" id="rc6" onchange="checkItem(this)"><label for="rc6">Documentation updated</label></li>
-                <li><input type="checkbox" id="rc7" onchange="checkItem(this)"><label for="rc7">Stakeholder communication sent</label></li>
-                <li><input type="checkbox" id="rc8" onchange="checkItem(this)"><label for="rc8">Deployment plan confirmed with DevOps</label></li>
-                <li><input type="checkbox" id="rc9" onchange="checkItem(this)"><label for="rc9">Rollback plan documented</label></li>
-                <li><input type="checkbox" id="rc10" onchange="checkItem(this)"><label for="rc10">Monitoring &amp; alerts configured</label></li>
-              </ul>
-              <div style="margin-top:16px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:6px" class="text-sm">
-                  <span id="release-progress-label">0/10 complete</span>
-                  <span id="release-progress-pct" style="color:var(--text-muted)">0%</span>
-                </div>
-                <div class="progress-bar-wrap"><div class="progress-bar" id="release-progress-bar" style="width:0%"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <div class="card-icon icon-jira">🎯</div>
-              <h3>Sprint Kick-off Checklist</h3>
-              <button class="btn btn-ghost btn-sm" onclick="resetChecklist('sprint')">↺ Reset</button>
-            </div>
-            <div class="card-body">
-              <ul class="checklist" id="sprint-checklist">
-                <li><input type="checkbox" id="sc1" onchange="checkItem(this)"><label for="sc1">Sprint goal defined and shared with team</label></li>
-                <li><input type="checkbox" id="sc2" onchange="checkItem(this)"><label for="sc2">All stories estimated in Jira</label></li>
-                <li><input type="checkbox" id="sc3" onchange="checkItem(this)"><label for="sc3">Stories linked to Aha features</label></li>
-                <li><input type="checkbox" id="sc4" onchange="checkItem(this)"><label for="sc4">Capacity calculated (see Sprint Capacity tool)</label></li>
-                <li><input type="checkbox" id="sc5" onchange="checkItem(this)"><label for="sc5">Dependencies identified and flagged</label></li>
-                <li><input type="checkbox" id="sc6" onchange="checkItem(this)"><label for="sc6">Acceptance criteria written for all stories</label></li>
-                <li><input type="checkbox" id="sc7" onchange="checkItem(this)"><label for="sc7">Jira sprint created and stories moved in</label></li>
-                <li><input type="checkbox" id="sc8" onchange="checkItem(this)"><label for="sc8">PTO / leave entered in Jira capacity</label></li>
-              </ul>
-              <div style="margin-top:16px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:6px" class="text-sm">
-                  <span id="sprint-progress-label">0/8 complete</span>
-                  <span id="sprint-progress-pct" style="color:var(--text-muted)">0%</span>
-                </div>
-                <div class="progress-bar-wrap"><div class="progress-bar" id="sprint-progress-bar" style="width:0%"></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DoD -->
-      <div id="tools-dod" style="display:none">
-        <div class="card">
-          <div class="card-header"><div class="card-icon icon-green">📋</div><h3>Definition of Done</h3></div>
-          <div class="card-body">
-            <div class="grid-3">
-              <div>
-                <div class="font-bold mb-8" style="color:var(--aha)">🔨 Engineering</div>
-                <ul class="checklist" id="dod-eng"></ul>
-              </div>
-              <div>
-                <div class="font-bold mb-8" style="color:var(--jira)">🧪 Quality</div>
-                <ul class="checklist" id="dod-qa"></ul>
-              </div>
-              <div>
-                <div class="font-bold mb-8" style="color:var(--green)">📣 Product</div>
-                <ul class="checklist" id="dod-product"></ul>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Admin: add new section -->
+      <div class="admin-only-block" style="margin-top:20px;display:none">
+        <button class="btn btn-outline" onclick="openAddSectionModal('pmtools')">＋ Add section</button>
       </div>
     </div>
 
@@ -1368,8 +1158,18 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
   <div class="modal">
     <h3>Add Custom Link</h3>
     <div class="form-row">
-      <label>Emoji icon</label>
-      <input id="al-emoji" type="text" value="🔗" maxlength="4" style="width:70px">
+      <label>Icon</label>
+      <div class="icon-picker" id="al-icon-picker">
+        <button type="button" class="icon-picker-btn selected" data-icon="🔗" onclick="pickIcon(this)" title="Link">🔗</button>
+        <button type="button" class="icon-picker-btn" data-icon="📄" onclick="pickIcon(this)" title="Page">📄</button>
+        <button type="button" class="icon-picker-btn" data-icon="💡" onclick="pickIcon(this)" title="Idea / Feature">💡</button>
+        <button type="button" class="icon-picker-btn" data-icon="📝" onclick="pickIcon(this)" title="Note">📝</button>
+        <button type="button" class="icon-picker-btn" data-icon="🛠️" onclick="pickIcon(this)" title="Tool">🛠️</button>
+        <button type="button" class="icon-picker-btn" data-icon="📊" onclick="pickIcon(this)" title="Dashboard">📊</button>
+        <button type="button" class="icon-picker-btn" data-icon="🚀" onclick="pickIcon(this)" title="Launch">🚀</button>
+        <button type="button" class="icon-picker-btn" data-icon="📋" onclick="pickIcon(this)" title="Checklist">📋</button>
+      </div>
+      <input id="al-emoji" type="text" value="🔗" maxlength="4" style="width:70px;margin-top:4px" placeholder="or type">
     </div>
     <div class="form-row">
       <label>Label</label>
@@ -1386,6 +1186,50 @@ body.admin-mode nav [data-admin-only] { display: block !important; }
     <div class="flex-end">
       <button class="btn btn-ghost" onclick="closeAddLinkModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveCustomLink()">Add link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Section Modal -->
+<div class="modal-backdrop" id="add-section-modal" onclick="closeAddSectionModalOnBackdrop(event)">
+  <div class="modal" style="width:420px">
+    <h3>Add New Section</h3>
+    <div class="form-row">
+      <label>Section title</label>
+      <input id="as-title" type="text" placeholder="e.g. Analytics, Planning, Research">
+    </div>
+    <div class="form-row">
+      <label>Section type</label>
+      <div style="display:flex;gap:8px">
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s" id="as-type-links-lbl">
+          <input type="radio" name="as-type" value="links" checked onchange="onSectionTypeChange()">
+          <span>
+            <span style="font-size:16px">🔗</span>
+            <strong style="display:block;font-size:13px">Link grid</strong>
+            <span style="font-size:11px;color:var(--text-muted)">Collection of links</span>
+          </span>
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s" id="as-type-embed-lbl">
+          <input type="radio" name="as-type" value="embed" onchange="onSectionTypeChange()">
+          <span>
+            <span style="font-size:16px">🖥️</span>
+            <strong style="display:block;font-size:13px">Embedded app</strong>
+            <span style="font-size:11px;color:var(--text-muted)">Inline iframe</span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="form-row" id="as-url-row" style="display:none">
+      <label>App URL</label>
+      <input id="as-url" type="url" placeholder="https://your-tool.amplifyapp.com">
+    </div>
+    <div class="form-row" id="as-height-row" style="display:none">
+      <label>Height (px)</label>
+      <input id="as-height" type="number" value="600" min="200" max="2000" step="50">
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-ghost" onclick="closeAddSectionModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewSection()">Create section</button>
     </div>
   </div>
 </div>
@@ -1481,7 +1325,7 @@ function showSection(name, btn) {
     dashboard: ['Dashboard', 'Welcome back'],
     aha:       ['Aha! Workspace', 'Links, builder & tips'],
     jira:      ['Jira ↔ Aha', 'Mappings & sync rules'],
-    pmtools:   ['PM Tools', 'RICE, Sprint, Checklists'],
+    pmtools:   ['PM Tools', 'Your PM toolbox'],
     products:  ['Products', 'Your portfolio'],
     ai:        ['AI Assist', 'Coming soon'],
     settings:  ['Settings', 'Configure your workspace']
@@ -1583,79 +1427,6 @@ function copyCursorPrompt() {
   navigator.clipboard.writeText(text).then(() => toast('Cursor prompt copied!'));
 }
 
-// ── RICE ─────────────────────────────────────────────────────────
-function calcRice() {
-  const r = parseFloat(document.getElementById('r').value);
-  const i = parseFloat(document.getElementById('i').value);
-  const c = parseFloat(document.getElementById('c').value) / 100;
-  const e = parseFloat(document.getElementById('e').value);
-  const score = Math.round((r * i * c) / e);
-
-  document.getElementById('rice-score').textContent = score.toLocaleString();
-  document.getElementById('i-val').textContent = i + '×';
-
-  const tierEl = document.getElementById('rice-tier');
-  if (score > 500)       { tierEl.className = 'tag tag-green'; tierEl.textContent = '🟢 Must do'; }
-  else if (score > 200)  { tierEl.className = 'tag tag-aha';   tierEl.textContent = '🟣 High Priority'; }
-  else if (score > 50)   { tierEl.className = 'tag tag-amber'; tierEl.textContent = '🟡 Medium Priority'; }
-  else                   { tierEl.className = 'tag tag-red';   tierEl.textContent = '🔴 Low Priority'; }
-}
-
-// ── Sprint capacity ───────────────────────────────────────────────
-function calcSprint() {
-  const members = parseFloat(document.getElementById('sc-members').value) || 0;
-  const days    = parseFloat(document.getElementById('sc-days').value)    || 0;
-  const focus   = parseFloat(document.getElementById('sc-focus').value)   / 100;
-  const hours   = parseFloat(document.getElementById('sc-hours').value)   || 0;
-  const pts     = parseFloat(document.getElementById('sc-pts').value)     || 0;
-
-  const idealHours = Math.round(members * days * focus * hours);
-  const storyPts   = Math.round(idealHours * pts);
-  document.getElementById('sprint-pts').textContent  = storyPts;
-  document.getElementById('sprint-hours').textContent = idealHours + ' ideal hours';
-}
-
-// ── Checklists ────────────────────────────────────────────────────
-function checkItem(cb) {
-  cb.closest('li').classList.toggle('done', cb.checked);
-  updateProgress();
-}
-
-function updateProgress() {
-  ['release', 'sprint'].forEach(id => {
-    const list  = document.getElementById(id + '-checklist');
-    if (!list) return;
-    const total = list.querySelectorAll('input[type=checkbox]').length;
-    const done  = list.querySelectorAll('input[type=checkbox]:checked').length;
-    const pct   = total ? Math.round(done / total * 100) : 0;
-    document.getElementById(id + '-progress-label').textContent = done + '/' + total + ' complete';
-    document.getElementById(id + '-progress-pct').textContent   = pct + '%';
-    document.getElementById(id + '-progress-bar').style.width   = pct + '%';
-  });
-}
-
-function resetChecklist(id) {
-  document.getElementById(id + '-checklist').querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.checked = false;
-    cb.closest('li').classList.remove('done');
-  });
-  updateProgress();
-}
-
-// ── Definition of Done ────────────────────────────────────────────
-function initDoD() {
-  const eng = ['Code reviewed (PR approved by ≥1 reviewer)', 'Unit tests passing', 'No new linting errors', 'Feature flag configured if needed', 'Migration scripts tested'];
-  const qa  = ['Acceptance criteria met', 'Regression tests run', 'Edge cases covered', 'Performance tested (if relevant)', 'Accessibility checked'];
-  const prd = ['Aha feature moved to "Shipped"', 'Jira story closed', 'Release notes updated', 'Stakeholders notified', 'Demo recorded or linked'];
-
-  [['dod-eng', eng], ['dod-qa', qa], ['dod-product', prd]].forEach(([id, items]) => {
-    const ul = document.getElementById(id);
-    items.forEach((text, i) => {
-      ul.innerHTML += `<li><input type="checkbox" id="${id}-${i}" onchange="checkItem(this)"><label for="${id}-${i}">${text}</label></li>`;
-    });
-  });
-}
-
 // ── Products ──────────────────────────────────────────────────────
 function renderProductsGrid() {
   const grid = document.getElementById('products-grid');
@@ -1725,7 +1496,8 @@ function buildConfigPayload() {
       jiraProject: S.jiraProject,
       products:    S.products,
     },
-    customLinks
+    customLinks,
+    pageSections
   };
 }
 
@@ -1837,6 +1609,13 @@ function removeCustomLink(e, gridId, idx) {
   renderCustomLinks(gridId);
 }
 
+// Icon picker
+function pickIcon(btn) {
+  document.querySelectorAll('#al-icon-picker .icon-picker-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('al-emoji').value = btn.dataset.icon;
+}
+
 // Modal
 function openAddLinkModal(gridId) {
   if (!adminMode) return;
@@ -1845,6 +1624,7 @@ function openAddLinkModal(gridId) {
   document.getElementById('al-label').value = '';
   document.getElementById('al-desc').value  = '';
   document.getElementById('al-url').value   = '';
+  document.querySelectorAll('#al-icon-picker .icon-picker-btn').forEach((b,i) => b.classList.toggle('selected', i===0));
   document.getElementById('add-link-modal').classList.add('open');
   setTimeout(() => document.getElementById('al-label').focus(), 100);
 }
@@ -1871,6 +1651,154 @@ function saveCustomLink() {
   renderCustomLinks(pendingLinkTarget);
   closeAddLinkModal();
   toast('Link added ✓');
+}
+
+// ── Custom sections (shared by dashboard + pmtools) ───────────────
+const PAGE_SECTIONS_KEY = 'pm-portal-page-sections';
+// pageSections: { dashboard: [{id, title}], pmtools: [{id, title}] }
+let pageSections = { dashboard: [], pmtools: [] };
+let pendingSectionPage = null;
+
+function loadPageSections() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PAGE_SECTIONS_KEY) || '{}');
+    if (saved.dashboard) pageSections.dashboard = saved.dashboard;
+    if (saved.pmtools)   pageSections.pmtools   = saved.pmtools;
+  } catch(e) {}
+  renderPageSections('dashboard');
+  renderPageSections('pmtools');
+}
+
+function savePageSections() {
+  localStorage.setItem(PAGE_SECTIONS_KEY, JSON.stringify(pageSections));
+}
+
+function renderPageSections(page) {
+  const containerId = page === 'dashboard' ? 'dashboard-sections-container' : 'pmtools-sections-container';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (page === 'pmtools') {
+    const countEl = document.getElementById('dash-tools-count');
+    if (countEl) countEl.textContent = pageSections.pmtools.length || '—';
+  }
+
+  const sections = pageSections[page] || [];
+  if (sections.length === 0) {
+    if (page === 'pmtools') {
+      container.innerHTML = `<div class="empty-state"><div class="es-icon">🛠️</div><p>No tools yet.<br>Enter admin mode and click <strong>Add section</strong> to create your first section.</p></div>`;
+    } else {
+      container.innerHTML = '';
+    }
+    return;
+  }
+
+  container.innerHTML = sections.map((sec, si) => {
+    const gridId = page + '-grid-' + sec.id;
+    const isEmbed = sec.type === 'embed';
+    const body = isEmbed
+      ? `<iframe src="${escHtml(sec.url || '')}" class="embed-frame" style="height:${sec.height || 600}px" allowfullscreen></iframe>
+         <div class="embed-edit-bar">
+           <span>🖥️ ${escHtml(sec.url || '')}</span>
+           <button class="btn btn-ghost btn-sm" onclick="editEmbedSection('${page}',${si})">Edit URL</button>
+         </div>`
+      : `<div class="grid-3" style="gap:10px" id="${gridId}">
+           <div class="add-link-card" onclick="openAddLinkModal('${gridId}')">
+             <span style="font-size:22px">＋</span><span>Add link</span>
+           </div>
+         </div>`;
+    return `
+      <div class="card custom-section-card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-icon icon-aha">${isEmbed ? '🖥️' : '🗂️'}</div>
+          <h3>${escHtml(sec.title)}</h3>
+          <button class="admin-section-delete" onclick="removePageSection('${page}',${si})" title="Delete section">✕</button>
+        </div>
+        <div class="card-body">${body}</div>
+      </div>
+    `;
+  }).join('');
+
+  sections.forEach(sec => {
+    if (sec.type !== 'embed') renderCustomLinks(page + '-grid-' + sec.id);
+  });
+}
+
+function removePageSection(page, si) {
+  if (!adminMode) return;
+  const sec = pageSections[page][si];
+  if (!confirm(`Delete section "${sec.title}" and all its links?`)) return;
+  const gridId = page + '-grid-' + sec.id;
+  delete customLinks[gridId];
+  localStorage.setItem(ADMIN_LINKS_KEY, JSON.stringify(customLinks));
+  pageSections[page].splice(si, 1);
+  savePageSections();
+  renderPageSections(page);
+  toast('Section deleted');
+}
+
+function onSectionTypeChange() {
+  const type = document.querySelector('input[name="as-type"]:checked').value;
+  const isEmbed = type === 'embed';
+  document.getElementById('as-url-row').style.display    = isEmbed ? 'block' : 'none';
+  document.getElementById('as-height-row').style.display = isEmbed ? 'block' : 'none';
+  document.getElementById('as-type-links-lbl').style.borderColor = isEmbed ? 'var(--border)' : 'var(--aha)';
+  document.getElementById('as-type-embed-lbl').style.borderColor = isEmbed ? 'var(--aha)' : 'var(--border)';
+}
+
+function openAddSectionModal(page) {
+  if (!adminMode) return;
+  pendingSectionPage = page;
+  document.getElementById('as-title').value = '';
+  document.getElementById('as-url').value   = '';
+  document.getElementById('as-height').value = '600';
+  document.querySelector('input[name="as-type"][value="links"]').checked = true;
+  onSectionTypeChange();
+  document.getElementById('add-section-modal').classList.add('open');
+  setTimeout(() => document.getElementById('as-title').focus(), 100);
+}
+function closeAddSectionModal() {
+  document.getElementById('add-section-modal').classList.remove('open');
+  pendingSectionPage = null;
+}
+function closeAddSectionModalOnBackdrop(e) {
+  if (e.target === document.getElementById('add-section-modal')) closeAddSectionModal();
+}
+function saveNewSection() {
+  const title = document.getElementById('as-title').value.trim();
+  if (!title) { toast('Section title is required'); return; }
+  const type = document.querySelector('input[name="as-type"]:checked').value;
+  const sec = { id: 'sec-' + Date.now(), title, type };
+  if (type === 'embed') {
+    const url = document.getElementById('as-url').value.trim();
+    if (!url) { toast('App URL is required for embedded sections'); return; }
+    sec.url    = url;
+    sec.height = parseInt(document.getElementById('as-height').value) || 600;
+  }
+  if (!pageSections[pendingSectionPage]) pageSections[pendingSectionPage] = [];
+  pageSections[pendingSectionPage].push(sec);
+  savePageSections();
+  renderPageSections(pendingSectionPage);
+  closeAddSectionModal();
+  toast('Section added ✓');
+}
+
+function editEmbedSection(page, si) {
+  if (!adminMode) return;
+  const sec = pageSections[page][si];
+  const newUrl = prompt('App URL:', sec.url || '');
+  if (newUrl === null) return;
+  const newH = prompt('Height (px):', sec.height || 600);
+  if (newH === null) return;
+  sec.url    = newUrl.trim();
+  sec.height = parseInt(newH) || 600;
+  savePageSections();
+  renderPageSections(page);
+  toast('Embed updated ✓');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // PIN
@@ -1914,6 +1842,7 @@ function enterAdmin() {
   document.getElementById('admin-bar').classList.add('visible');
   document.getElementById('admin-label').textContent = 'Exit admin';
   document.getElementById('admin-toggle-btn').classList.add('admin-active');
+  document.querySelectorAll('.admin-only-block').forEach(el => el.style.display = 'block');
 }
 function exitAdmin() {
   adminMode = false;
@@ -1921,6 +1850,7 @@ function exitAdmin() {
   document.getElementById('admin-bar').classList.remove('visible');
   document.getElementById('admin-label').textContent = 'Admin';
   document.getElementById('admin-toggle-btn').classList.remove('admin-active');
+  document.querySelectorAll('.admin-only-block').forEach(el => el.style.display = 'none');
 }
 
 // ── Init ──────────────────────────────────────────────────────────
@@ -1941,6 +1871,10 @@ function exitAdmin() {
       const cfg = await res.json();
       if (cfg.settings)    Object.assign(S, cfg.settings);
       if (cfg.customLinks) { customLinks = cfg.customLinks; loadedFromRemote = true; }
+      if (cfg.pageSections) {
+        if (cfg.pageSections.dashboard) pageSections.dashboard = cfg.pageSections.dashboard;
+        if (cfg.pageSections.pmtools)   pageSections.pmtools   = cfg.pageSections.pmtools;
+      }
     }
   } catch(e) { /* no config.json — use localStorage */ }
 
@@ -1950,10 +1884,7 @@ function exitAdmin() {
   } else {
     loadCustomLinks();
   }
-  calcRice();
-  calcSprint();
-  initDoD();
-  updateProgress();
+  loadPageSections();
 })();
 </script>
 </body>
